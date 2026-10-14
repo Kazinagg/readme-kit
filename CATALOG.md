@@ -392,17 +392,17 @@ python -m generator.cli compile --input README.template.md --output README.md
 Облегченный вариант без телеметрии и радара — идеален для мобильных экранов и лаконичных README:
 
 ### 15.1 Cyberpunk Compact Header
-<img src="assets/generated/header-compact-cyberpunk.svg?v=cb5af4ec" width="100%" alt="CYBER-CORE" />
+<img src="assets/generated/header-compact-cyberpunk.svg?v=0a7531e1" width="100%" alt="CYBER-CORE" />
 
 <br/>
 
 ### 15.2 Tactical Military Compact Header
-<img src="assets/generated/header-compact-tactical.svg?v=e0113d01" width="100%" alt="TACTICAL-OPS" />
+<img src="assets/generated/header-compact-tactical.svg?v=b76a775d" width="100%" alt="TACTICAL-OPS" />
 
 <br/>
 
 ### 15.3 Minimal Glass Compact Header
-<img src="assets/generated/header-compact-minimal.svg?v=bbbc676a" width="100%" alt="MINIMAL-SYS" />
+<img src="assets/generated/header-compact-minimal.svg?v=f059ad1c" width="100%" alt="MINIMAL-SYS" />
 
 ---
 
@@ -454,7 +454,7 @@ python -m generator.cli compile --input README.template.md --output README.md
 <br/>
 
 ### 18.2 Modern Compact Header (Linear Violet)
-<img src="assets/generated/header-modern-compact-demo.svg?v=6cbd8bec" width="100%" alt="COMPACT VECTOR MODULE" />
+<img src="assets/generated/header-modern-compact-demo.svg?v=03cc3383" width="100%" alt="COMPACT VECTOR MODULE" />
 
 <br/>
 

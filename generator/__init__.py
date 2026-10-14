@@ -1,5 +1,5 @@
 """
-Pixel Readme Kit Generator Package
+ReadmeKit Generator Package
 """
 
-__version__ = "4.2.0"
+__version__ = "5.1.0"

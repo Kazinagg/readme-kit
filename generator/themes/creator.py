@@ -35,7 +35,14 @@ class ThemeCreator:
             self.presets_dir = presets_dir
         else:
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            self.presets_dir = os.path.abspath(os.path.join(base_dir, "..", "..", "presets"))
+            cand_pkg = os.path.abspath(os.path.join(base_dir, "..", "presets"))
+            cand_root = os.path.abspath(os.path.join(base_dir, "..", "..", "presets"))
+            if os.path.isdir(cand_pkg):
+                self.presets_dir = cand_pkg
+            elif os.path.isdir(cand_root):
+                self.presets_dir = cand_root
+            else:
+                self.presets_dir = cand_pkg
 
     def generate_theme(
         self,

@@ -1,5 +1,5 @@
 """
-Markdown Compiler / Transpiler for Pixel Readme Kit v3.0
+Markdown Compiler / Transpiler for ReadmeKit v5.1
 Parses markdown files containing pixel-kit directives:
   <!-- pixel-kit:header ... -->
   <!-- pixel-kit:window ... --> ... <!-- /pixel-kit:window -->
@@ -51,96 +51,11 @@ from generator.cache import BuildCache
 from generator.github_api import (
     fetch_repo_data,
     fetch_user_data,
-    fetch_star_trajectory
+    fetch_star_trajectory,
+    fetch_github_stat,
+    _GITHUB_CACHE
 )
 
-_GITHUB_CACHE = {}
-
-def fetch_github_stat(repo, stat_type):
-    """
-    Fetches real-time repository stats from GitHub REST API:
-    - stars -> ('★ 42', 'https://github.com/{repo}/stargazers')
-    - forks -> ('🍴 12', 'https://github.com/{repo}/network/members')
-    - issues -> ('● ISSUES: 5', 'https://github.com/{repo}/issues')
-    - license -> ('⚖ MIT', 'https://github.com/{repo}')
-    - watchers -> ('👁 20', 'https://github.com/{repo}/watchers')
-    - version / release -> ('v1.0.0', 'https://github.com/{repo}/releases')
-    """
-    clean_repo = repo.strip().strip("/")
-    cache_key = f"{clean_repo}:{stat_type.lower()}"
-    if cache_key in _GITHUB_CACHE:
-        return _GITHUB_CACHE[cache_key]
-
-    default_links = {
-        "stars": f"https://github.com/{clean_repo}/stargazers",
-        "forks": f"https://github.com/{clean_repo}/network/members",
-        "issues": f"https://github.com/{clean_repo}/issues",
-        "watchers": f"https://github.com/{clean_repo}/watchers",
-        "license": f"https://github.com/{clean_repo}",
-        "version": f"https://github.com/{clean_repo}/releases",
-        "release": f"https://github.com/{clean_repo}/releases",
-    }
-    def_link = default_links.get(stat_type.lower(), f"https://github.com/{clean_repo}")
-
-    def format_count(n):
-        if n is None:
-            return "--"
-        n = int(n)
-        if n >= 1000000:
-            return f"{n/1000000:.1f}M"
-        if n >= 1000:
-            return f"{n/1000:.1f}k"
-        return str(n)
-
-    st = stat_type.lower()
-    try:
-        if st in ("version", "release"):
-            url = f"https://api.github.com/repos/{clean_repo}/releases/latest"
-            req = urllib.request.Request(url, headers={"User-Agent": "Pixel-Readme-Kit/3.0"})
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                data = json.loads(resp.read().decode())
-                tag = data.get("tag_name") or data.get("name") or "v1.0"
-                res = (str(tag), def_link)
-                _GITHUB_CACHE[cache_key] = res
-                return res
-        else:
-            url = f"https://api.github.com/repos/{clean_repo}"
-            req = urllib.request.Request(url, headers={"User-Agent": "Pixel-Readme-Kit/3.0"})
-            with urllib.request.urlopen(req, timeout=3) as resp:
-                data = json.loads(resp.read().decode())
-
-            if st == "stars":
-                count = format_count(data.get("stargazers_count", 0))
-                res = (f"★ {count}", def_link)
-            elif st == "forks":
-                count = format_count(data.get("forks_count", 0))
-                res = (f"FORKS: {count}", def_link)
-            elif st == "issues":
-                count = format_count(data.get("open_issues_count", 0))
-                res = (f"● ISSUES: {count}", def_link)
-            elif st == "watchers":
-                count = format_count(data.get("subscribers_count", 0))
-                res = (f"WATCHERS: {count}", def_link)
-            elif st == "license":
-                lic = (data.get("license") or {}).get("spdx_id") or "MIT"
-                res = (f"LICENSE: {lic}", def_link)
-            else:
-                res = (f"{st.upper()}", def_link)
-
-            _GITHUB_CACHE[cache_key] = res
-            return res
-    except Exception:
-        fallback_text = {
-            "stars": "★ STARS",
-            "forks": "FORKS",
-            "issues": "● ISSUES",
-            "license": "LICENSE: MIT",
-            "version": "v1.0.0",
-            "release": "v1.0.0",
-        }.get(st, st.upper())
-        res = (fallback_text, def_link)
-        _GITHUB_CACHE[cache_key] = res
-        return res
 
 def parse_directive_attrs(attr_string):
     """Parses key="value" or key=value attributes from a directive string."""
@@ -297,6 +212,11 @@ class MarkdownCompiler:
         width_attr = ' width="100%"' if is_full_width else ""
         alt_attr = f' alt="{escape_xml(alt)}"' if alt else ""
 
+        def _format_url(busted_url: str) -> str:
+            if self.base_url:
+                return f"{self.base_url.rstrip('/')}/{busted_url.lstrip('/')}"
+            return busted_url
+
         if mode in ("gh", "github"):
             kwargs_dark = dict(kwargs, mode="dark")
             kwargs_light = dict(kwargs, mode="light")
@@ -312,15 +232,16 @@ class MarkdownCompiler:
             url_dark = self._save_asset(generator_fn, kwargs_dark, out_dark, f"{default_prefix}-dark")
             url_light = self._save_asset(generator_fn, kwargs_light, out_light, f"{default_prefix}-light")
 
-            url_dark_busted = self._apply_cache_bust(f"{url_dark}#gh-dark-mode-only")
-            url_light_busted = self._apply_cache_bust(f"{url_light}#gh-light-mode-only")
+            url_dark_busted = _format_url(self._apply_cache_bust(f"{url_dark}#gh-dark-mode-only"))
+            url_light_busted = _format_url(self._apply_cache_bust(f"{url_light}#gh-light-mode-only"))
 
             img_dark = f'<img src="{url_dark_busted}"{width_attr}{alt_attr} />'
             img_light = f'<img src="{url_light_busted}"{width_attr}{alt_attr} />'
 
             if link:
-                img_dark = f'<a href="{link}">{img_dark}</a>'
-                img_light = f'<a href="{link}">{img_light}</a>'
+                escaped_link = escape_xml(link)
+                img_dark = f'<a href="{escaped_link}">{img_dark}</a>'
+                img_light = f'<a href="{escaped_link}">{img_light}</a>'
 
             return f"{img_dark}\n{img_light}"
 
@@ -339,8 +260,8 @@ class MarkdownCompiler:
             url_dark = self._save_asset(generator_fn, kwargs_dark, out_dark, f"{default_prefix}-dark")
             url_light = self._save_asset(generator_fn, kwargs_light, out_light, f"{default_prefix}-light")
 
-            url_dark_busted = self._apply_cache_bust(url_dark)
-            url_light_busted = self._apply_cache_bust(url_light)
+            url_dark_busted = _format_url(self._apply_cache_bust(url_dark))
+            url_light_busted = _format_url(self._apply_cache_bust(url_light))
 
             pic = f"""<picture>
   <source media="(prefers-color-scheme: dark)" srcset="{url_dark_busted}">
@@ -348,17 +269,19 @@ class MarkdownCompiler:
   <img src="{url_dark_busted}"{width_attr}{alt_attr} />
 </picture>"""
             if link:
-                pic = f'<a href="{link}">\n{pic}\n</a>'
+                escaped_link = escape_xml(link)
+                pic = f'<a href="{escaped_link}">\n{pic}\n</a>'
             return pic
 
         else:
             # "auto" (default adaptive), "dark", "light", "transparent"
             kwargs_single = dict(kwargs, mode=mode)
             url = self._save_asset(generator_fn, kwargs_single, custom_out, default_prefix)
-            url_busted = self._apply_cache_bust(url)
+            url_busted = _format_url(self._apply_cache_bust(url))
             img = f'<img src="{url_busted}"{width_attr}{alt_attr} />'
             if link:
-                img = f'<a href="{link}">{img}</a>'
+                escaped_link = escape_xml(link)
+                img = f'<a href="{escaped_link}">{img}</a>'
             return img
 
     def compile_text(self, markdown_text, template_dir=None):
@@ -376,7 +299,7 @@ class MarkdownCompiler:
         # <!-- /pixel-kit:window -->
         # ---------------------------------------------------------------
         window_regex = re.compile(
-            r'<!--\s*(?:pixel-kit|readme-kit):window\s+(.*?)\s*-->([\s\S]*?)<!--\s*/(?:pixel-kit|readme-kit):window\s*-->',
+            r'<!--\s*(?:pixel-kit|readme-kit):window\s+(.*?)\s*-->((?:(?!<!--\s*/?(?:pixel-kit|readme-kit):window)[\s\S])*?)<!--\s*/(?:pixel-kit|readme-kit):window\s*-->',
             re.IGNORECASE
         )
 
@@ -467,7 +390,7 @@ class MarkdownCompiler:
         # <!-- /pixel-kit:terminal -->
         # ---------------------------------------------------------------
         terminal_regex = re.compile(
-            r'<!--\s*(?:pixel-kit|readme-kit):terminal\s+(.*?)\s*-->([\s\S]*?)<!--\s*/(?:pixel-kit|readme-kit):terminal\s*-->',
+            r'<!--\s*(?:pixel-kit|readme-kit):terminal\s+(.*?)\s*-->((?:(?!<!--\s*/?(?:pixel-kit|readme-kit):terminal)[\s\S])*?)<!--\s*/(?:pixel-kit|readme-kit):terminal\s*-->',
             re.IGNORECASE
         )
 
@@ -542,7 +465,7 @@ class MarkdownCompiler:
         # <!-- /pixel-kit:quote -->
         # ---------------------------------------------------------------
         quote_regex = re.compile(
-            r'<!--\s*(?:pixel-kit|readme-kit):quote\s+(.*?)\s*-->([\s\S]*?)<!--\s*/(?:pixel-kit|readme-kit):quote\s*-->',
+            r'<!--\s*(?:pixel-kit|readme-kit):quote\s+(.*?)\s*-->((?:(?!<!--\s*/?(?:pixel-kit|readme-kit):quote)[\s\S])*?)<!--\s*/(?:pixel-kit|readme-kit):quote\s*-->',
             re.IGNORECASE
         )
 
@@ -584,7 +507,7 @@ class MarkdownCompiler:
         # <!-- /pixel-kit:metrics -->
         # ---------------------------------------------------------------
         metrics_regex = re.compile(
-            r'<!--\s*(?:pixel-kit|readme-kit):metrics\s*(.*?)\s*-->([\s\S]*?)<!--\s*/(?:pixel-kit|readme-kit):metrics\s*-->',
+            r'<!--\s*(?:pixel-kit|readme-kit):metrics\s*(.*?)\s*-->((?:(?!<!--\s*/?(?:pixel-kit|readme-kit):metrics)[\s\S])*?)<!--\s*/(?:pixel-kit|readme-kit):metrics\s*-->',
             re.IGNORECASE
         )
 
@@ -632,7 +555,7 @@ class MarkdownCompiler:
         # <!-- /pixel-kit:timeline -->
         # ---------------------------------------------------------------
         timeline_regex = re.compile(
-            r'<!--\s*(?:pixel-kit|readme-kit):timeline\s*(.*?)\s*-->([\s\S]*?)<!--\s*/(?:pixel-kit|readme-kit):timeline\s*-->',
+            r'<!--\s*(?:pixel-kit|readme-kit):timeline\s*(.*?)\s*-->((?:(?!<!--\s*/?(?:pixel-kit|readme-kit):timeline)[\s\S])*?)<!--\s*/(?:pixel-kit|readme-kit):timeline\s*-->',
             re.IGNORECASE
         )
 
@@ -696,7 +619,8 @@ class MarkdownCompiler:
 
             tag_url = attrs.get("tag_url") or attrs.get("tag_href")
             close_url = attrs.get("close_url") or attrs.get("close_href")
-            compact = attrs.get("compact", False)
+            raw_compact = attrs.get("compact", False)
+            compact = raw_compact if isinstance(raw_compact, bool) else str(raw_compact).lower() in ("true", "1", "yes")
 
             return self._render_asset_markup(
                 generate_header,
@@ -843,8 +767,13 @@ class MarkdownCompiler:
                 gh_stat = text_val.lower()
 
             if gh_stat:
-                repo_name = attrs.get("repo", "Kazinagg/pixel-readme-kit")
-                stat_text, stat_link = fetch_github_stat(repo_name, gh_stat)
+                repo_name = attrs.get("repo", "Kazinagg/readme-kit")
+                raw_af = attrs.get("auto_fetch")
+                if raw_af is not None:
+                    auto_fetch = raw_af if isinstance(raw_af, bool) else str(raw_af).lower() not in ("false", "0", "no")
+                else:
+                    auto_fetch = True
+                stat_text, stat_link = fetch_github_stat(repo_name, gh_stat, auto_fetch=auto_fetch)
                 text_val = stat_text
                 if not link_url:
                     link_url = stat_link

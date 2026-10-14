@@ -7,7 +7,6 @@ on:
     paths:
       - '*.template.md'
       - 'generator/**'
-      - 'presets/**'
       - 'tests/**'
       - '.github/workflows/readme-compile.yml'
   pull_request:
@@ -95,7 +94,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           if [ -n "$(git status --porcelain)" ]; then
             git add .
-            git commit -m "chore: auto-compile pixel-readme-kit templates [skip ci]"
+            git commit -m "chore: auto-compile readme-kit templates [skip ci]"
             git push origin main
           else
             echo "No changes detected. Working tree clean."

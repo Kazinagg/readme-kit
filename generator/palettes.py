@@ -359,6 +359,27 @@ THEMES = {
         "text_dim": "#94A3B8",
         "shadow_dark": "#060D17",
         "shadow_mid": "#102030",
+    },
+    "rough-doodle": {
+        "name": "Rough Hand-Drawn Doodle & Paper",
+        "bg_glass": "#FDFDFD",
+        "bg_panel": "#F4F4F5",
+        "bg_chip": "rgba(79, 70, 229, 0.10)",
+        "border_slate": "#1F2937",
+        "primary": "#4F46E5",
+        "primary_glow": "rgba(79, 70, 229, 0.25)",
+        "secondary": "#059669",
+        "secondary_glow": "rgba(5, 150, 105, 0.25)",
+        "success": "#059669",
+        "success_glow": "rgba(5, 150, 105, 0.25)",
+        "warning": "#D97706",
+        "warning_glow": "rgba(217, 119, 6, 0.25)",
+        "accent": "#059669",
+        "tertiary": "#D97706",
+        "text_main": "#111827",
+        "text_dim": "#4B5563",
+        "shadow_dark": "#E5E7EB",
+        "shadow_mid": "#D1D5DB",
     }
 }
 
@@ -386,6 +407,8 @@ THEMES["notebook"] = THEMES["notebook-graph"]
 THEMES["notebook_graph"] = THEMES["notebook-graph"]
 THEMES["blueprint"] = THEMES["blueprint-sketch"]
 THEMES["blueprint_sketch"] = THEMES["blueprint-sketch"]
+THEMES["doodle"] = THEMES["rough-doodle"]
+THEMES["sketch"] = THEMES["rough-doodle"]
 
 # Re-export modern Theme domain utilities
 from generator.themes import ThemeRegistry, theme_registry, resolve_theme, load_preset

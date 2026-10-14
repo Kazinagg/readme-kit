@@ -45,7 +45,7 @@ def handle_git_push(handler) -> None:
 
         committed = False
         if has_staged_changes:
-            commit_msg = "docs: update README via Pixel-Kit Studio"
+            commit_msg = "docs: update README via ReadmeKit Studio"
             c_res = subprocess.run(["git", "commit", "-m", commit_msg], cwd=work_dir, capture_output=True, text=True)
             if c_res.returncode != 0:
                 handler.send_response(500)
@@ -76,5 +76,10 @@ def handle_git_push(handler) -> None:
             "files": files_to_add,
             "message": "README and assets pushed to GitHub successfully!" if committed else "Already up to date. Pushed latest commits to GitHub."
         }).encode("utf-8"))
+    except FileNotFoundError:
+        handler.send_response(500)
+        handler.send_header("Content-Type", "application/json")
+        handler.end_headers()
+        handler.wfile.write(json.dumps({"ok": False, "error": "Git command line tool not found on system PATH"}).encode("utf-8"))
     except Exception as e:
         handler.send_error(500, f"Git push error: {e}")

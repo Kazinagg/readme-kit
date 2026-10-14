@@ -1,5 +1,5 @@
 """
-HUD Studio Server Façade for Pixel Readme Kit.
+HUD Studio Server Façade for ReadmeKit.
 ==============================================
 Provides 100% backwards compatibility for legacy and CLI callers.
 Modular implementation is located in `generator.studio`.

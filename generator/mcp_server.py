@@ -1,5 +1,5 @@
 """
-Native MCP (Model Context Protocol) Server for Pixel Readme Kit v4.0.
+Native MCP (Model Context Protocol) Server for ReadmeKit v5.1.
 Provides structured tools for AI assistants (Claude, Cursor, Antigravity, Copilot)
 to compile, render, validate, and scaffold retro-cyberpunk README layouts.
 
@@ -32,6 +32,9 @@ from generator.engine import (
     generate_techstack,
     generate_timeline,
     generate_social,
+    generate_starchart,
+    generate_profile_card,
+    normalize_style_and_theme,
     validate_svg
 )
 from generator.scaffolder import scaffold_readme, get_available_templates
@@ -68,6 +71,7 @@ def tool_compile_readme(
 def tool_render_block(
     block_type="header",
     style: str = "cyberpunk",
+    theme: str = None,
     mode: str = "auto",
     preset: str = None,
     primary: str = None,
@@ -83,7 +87,7 @@ def tool_render_block(
     params: dict = None,
     **kwargs
 ) -> dict:
-    """Generates an individual SVG block (header, footer, callout, frame, chip, divider, splitter, metrics, progress, techstack, timeline)."""
+    """Generates an individual SVG block (header, footer, callout, frame, chip, divider, splitter, metrics, progress, techstack, timeline, social, starchart, profile)."""
     if isinstance(block_type, dict):
         d = dict(block_type)
         return tool_render_block(**d)
@@ -92,25 +96,29 @@ def tool_render_block(
     p = params or {}
     is_compact = compact or kwargs.get("compact", False) or p.get("compact", False)
 
+    req_style = style or p.get("style", "cyberpunk")
+    req_theme = theme or p.get("theme")
+    style, theme = normalize_style_and_theme(req_style, req_theme)
+
     try:
         if btype == "header":
             svg = generate_header(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent,
-                title=title or p.get("title") or "PIXEL-KIT",
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
+                title=title or p.get("title") or "READMEKIT",
                 subtitle=subtitle or p.get("subtitle") or "TRANSLUCENT HUD SYSTEM",
                 tag=tag or p.get("tag") or "SYSTEM_ACTIVE",
                 compact=is_compact
             )
         elif btype == "footer":
             svg = generate_footer(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent,
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
                 status=title or p.get("status") or "SESSION_ACTIVE // STANDBY",
                 nav_text=tag or p.get("tag") or "RETURN TO TOP",
                 sub_text=subtitle or p.get("sub_text")
             )
         elif btype == "callout":
             svg = generate_callout(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent,
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
                 callout_type=callout_type or p.get("callout_type", "note"),
                 title=title or p.get("title") or "SYSTEM NOTICE",
                 subtitle=subtitle or p.get("subtitle", ""),
@@ -118,36 +126,36 @@ def tool_render_block(
             )
         elif btype == "frame":
             svg = generate_frame(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent,
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
                 frame_type=frame_type or p.get("frame_type", "top"),
                 title=title or p.get("title") or "╔═ SYSTEM.CORE // RUNTIME.SYS",
                 tag=tag or p.get("tag") or "[OPEN_HUD]"
             )
         elif btype == "chip":
             svg = generate_chip(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent,
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
                 chip_type=chip_type or p.get("chip_type", "closed"),
                 text=title or p.get("text") or "CHIP"
             )
         elif btype == "divider":
             svg = generate_divider(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent
             )
         elif btype == "splitter":
             svg = generate_splitter(
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent,
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
                 label=title or p.get("label") or "[MODULE: SUB_SYSTEM]"
             )
         elif btype == "metrics":
-            if "cards" in p:
-                cards = p["cards"]
-            elif "label" in p:
-                cards = [p]
-            else:
-                cards = [{"label": title or "SYSTEM METRIC", "value": subtitle or "100%", "delta": tag}]
+            cards = p.get("metrics") or p.get("cards")
+            if not cards:
+                if "label" in p:
+                    cards = [p]
+                else:
+                    cards = [{"label": title or "SYSTEM METRIC", "value": subtitle or "100%", "delta": tag}]
             svg = generate_metrics(
-                cards=cards,
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent
+                metrics=cards,
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent
             )
         elif btype == "progress":
             val = p.get("value")
@@ -157,32 +165,51 @@ def tool_render_block(
                 value=val,
                 label=title or p.get("label") or "PROGRESS",
                 sub=subtitle or p.get("sub"),
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent
             )
         elif btype == "techstack":
             items = p.get("items") or (subtitle.split(",") if subtitle else ["python", "cpp", "docker", "git"])
             cols = p.get("columns", 5)
             svg = generate_techstack(
                 items=items, columns=cols,
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent
             )
         elif btype == "timeline":
-            items = p.get("milestones") or p.get("items")
+            items = p.get("milestones") or p.get("items") or []
             svg = generate_timeline(
                 items=items,
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent
             )
         elif btype == "social":
             tags = p.get("tags") or kwargs.get("tags")
             if isinstance(tags, str):
                 tags = [t.strip() for t in tags.split(",") if t.strip()]
-            repo = p.get("repo") or kwargs.get("repo") or "Kazinagg/pixel-readme-kit"
+            repo = p.get("repo") or kwargs.get("repo") or "Kazinagg/readme-kit"
             svg = generate_social(
-                title=title or p.get("title") or kwargs.get("title") or "PIXEL README KIT",
+                title=title or p.get("title") or kwargs.get("title") or "READMEKIT",
                 subtitle=subtitle or p.get("subtitle") or kwargs.get("subtitle") or "RETRO-FUTURISTIC HUD & SCI-FI INFOGRAPHICS",
                 repo=repo,
                 tags=tags,
-                style=style, mode=mode, preset=preset, primary=primary, accent=accent
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent
+            )
+        elif btype in ("starchart", "star_chart", "chart"):
+            points = p.get("points") or kwargs.get("points")
+            current = p.get("current") or kwargs.get("current")
+            delta = p.get("delta") or kwargs.get("delta")
+            repo = p.get("repo") or kwargs.get("repo") or "Kazinagg/readme-kit"
+            svg = generate_starchart(
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
+                repo=repo, points=points, current=current, delta=delta
+            )
+        elif btype in ("profile", "profile_card"):
+            svg = generate_profile_card(
+                style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent,
+                name=title or p.get("name") or "DEVELOPER",
+                role=subtitle or p.get("role") or "SYSTEM ARCHITECT",
+                bio=p.get("bio") or "Building high-performance runtimes and tooling.",
+                status=tag or p.get("status") or "AVAILABLE FOR HIRE",
+                location=p.get("location") or "REMOTE // UTC",
+                badge=p.get("badge") or "LEVEL_99"
             )
         else:
             return {"status": "error", "success": False, "message": f"Unsupported block type: '{block_type}'"}
@@ -215,12 +242,27 @@ def tool_validate_template(content: str = None, file_path: str = None) -> dict:
     directives = []
     warnings = []
 
-    pattern = re.compile(r'<!--\s*pixel-kit:([a-z_]+)\s*(.*?)\s*-->', re.IGNORECASE)
+    pattern = re.compile(r'<!--\s*(/?)\s*(?:pixel-kit|readme-kit):([a-z_0-9-]+)\s*([\s\S]*?)\s*-->', re.IGNORECASE)
+    paired_containers = ("window", "terminal", "quote", "timeline", "metrics")
+    open_counts = {c: 0 for c in paired_containers}
+    close_counts = {c: 0 for c in paired_containers}
+
     for m in pattern.finditer(text):
-        dtype = m.group(1).lower()
-        attr_str = m.group(2)
+        is_close = bool(m.group(1))
+        tag_name = m.group(2).lower().strip()
+        attr_str = m.group(3).strip()
+
+        if is_close:
+            if tag_name in close_counts:
+                close_counts[tag_name] += 1
+            continue
+
+        dtype = tag_name
         attrs = parse_directive_attrs(attr_str)
         directives.append({"type": dtype, "attrs": attrs})
+
+        if dtype in open_counts:
+            open_counts[dtype] += 1
 
         # Safe budget inspections
         if dtype == "header":
@@ -236,6 +278,13 @@ def tool_validate_template(content: str = None, file_path: str = None) -> dict:
             t = attrs.get("title", "")
             if len(t) > 40:
                 warnings.append(f"Window title '{t}' is long ({len(t)} chars). Recommended <= 35 chars.")
+
+    for container in ("window", "terminal", "quote", "timeline"):
+        if open_counts[container] != close_counts[container]:
+            warnings.append(f"Mismatched container tags for '{container}': {open_counts[container]} open vs {close_counts[container]} close.")
+
+    if close_counts["metrics"] > open_counts["metrics"]:
+        warnings.append(f"Mismatched container tags for 'metrics': {open_counts['metrics']} open vs {close_counts['metrics']} close.")
 
     return {
         "status": "success",
@@ -345,13 +394,14 @@ TOOLS_METADATA = [
     },
     {
         "name": "render_block",
-        "description": "Generates a standalone pixel-HUD SVG block (header, footer, callout, frame, chip, divider, splitter, metrics, progress, techstack, timeline, social).",
+        "description": "Generates a standalone pixel-HUD SVG block (header, footer, callout, frame, chip, divider, splitter, metrics, progress, techstack, timeline, social, starchart, profile).",
         "inputSchema": {
             "type": "object",
             "required": ["block_type"],
             "properties": {
-                "block_type": {"type": "string", "enum": ["header", "footer", "callout", "frame", "chip", "divider", "splitter", "metrics", "progress", "techstack", "timeline", "social"]},
-                "style": {"type": "string", "enum": ["cyberpunk", "tactical", "minimal"], "default": "cyberpunk"},
+                "block_type": {"type": "string", "enum": ["header", "footer", "callout", "frame", "chip", "divider", "splitter", "metrics", "progress", "techstack", "timeline", "social", "starchart", "profile"]},
+                "style": {"type": "string", "enum": ["pixel", "modern", "sketch", "cyberpunk", "tactical", "minimal"], "default": "cyberpunk"},
+                "theme": {"type": "string", "description": "Theme name (e.g. slate-dark, tokyo, emerald-clean, notebook-graph)"},
                 "mode": {"type": "string", "enum": ["auto", "dark", "light", "transparent", "gh", "picture"], "default": "auto"},
                 "preset": {"type": "string", "description": "Preset name (cyberpunk, amber, matrix, tokyo) or JSON path"},
                 "primary": {"type": "string", "description": "Hex primary color (e.g. #00C8D7)"},
@@ -430,7 +480,7 @@ def dispatch_tool_call(name: str, arguments: dict) -> dict:
 
 def run_native_stdio_server():
     """Runs zero-dependency standard MCP stdio JSON-RPC loop."""
-    sys.stderr.write("[*] Pixel Readme Kit MCP Server v4.0 running on STDIO...\n")
+    sys.stderr.write("[*] ReadmeKit MCP Server v5.1 running on STDIO...\n")
     sys.stderr.flush()
 
     while True:
@@ -442,10 +492,31 @@ def run_native_stdio_server():
             if not line:
                 continue
 
-            request = json.loads(line)
+            try:
+                request = json.loads(line)
+            except Exception:
+                err_resp = {
+                    "jsonrpc": "2.0",
+                    "id": None,
+                    "error": {
+                        "code": -32700,
+                        "message": "Parse error"
+                    }
+                }
+                sys.stdout.write(json.dumps(err_resp, ensure_ascii=False) + "\n")
+                sys.stdout.flush()
+                continue
+
+            if not isinstance(request, dict):
+                continue
+
             req_id = request.get("id")
             method = request.get("method")
             params = request.get("params", {})
+
+            # Per JSON-RPC 2.0: if "id" is absent, it is a notification and must not receive a response
+            if "id" not in request:
+                continue
 
             if method == "initialize":
                 response = {
@@ -457,8 +528,8 @@ def run_native_stdio_server():
                             "tools": {}
                         },
                         "serverInfo": {
-                            "name": "pixel-readme-kit",
-                            "version": "4.0.0"
+                            "name": "readme-kit",
+                            "version": "5.1.0"
                         }
                     }
                 }
@@ -528,15 +599,12 @@ def main():
         from mcp.server.fastmcp import FastMCP
         # If user explicitly wants FastMCP
         if "--fastmcp" in sys.argv:
-            mcp = FastMCP("pixel-readme-kit")
-            for t in TOOLS_METADATA:
-                name = t["name"]
-                desc = t["description"]
-                # Register tools
-                fn = lambda n=name, **kwargs: dispatch_tool_call(n, kwargs)
-                fn.__name__ = name
-                fn.__doc__ = desc
-                mcp.tool()(fn)
+            mcp = FastMCP("readme-kit")
+            mcp.tool()(tool_compile_readme)
+            mcp.tool()(tool_render_block)
+            mcp.tool()(tool_validate_template)
+            mcp.tool()(tool_scaffold_project)
+            mcp.tool()(tool_inspect_safe_zones)
             mcp.run()
             return
     except ImportError:

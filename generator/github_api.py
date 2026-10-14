@@ -173,3 +173,98 @@ def fetch_star_trajectory(repo: str, token: Optional[str] = None, sample_count: 
         "forks": repo_data["forks"],
         "watchers": repo_data["watchers"]
     }, None
+
+
+_GITHUB_CACHE: Dict[Tuple[str, str], Tuple[str, str]] = {}
+
+
+def format_count(n: Any) -> str:
+    """Formats numeric count with K/M suffixes."""
+    if n is None:
+        return "--"
+    try:
+        n = int(n)
+    except (ValueError, TypeError):
+        return str(n)
+    if n >= 1000000:
+        return f"{n/1000000:.1f}M"
+    if n >= 1000:
+        return f"{n/1000:.1f}k"
+    return str(n)
+
+
+def fetch_github_stat(repo: str, stat_type: str, auto_fetch: bool = True) -> Tuple[str, str]:
+    """
+    Fetches specific stat for a chip or badge from GitHub API.
+    Returns (display_text, link_url).
+    Caches only successful network responses.
+    """
+    clean_repo = repo.strip().strip("/") if repo else "Kazinagg/readme-kit"
+    st = stat_type.lower()
+    cache_key = (clean_repo, st)
+
+    def_links = {
+        "stars": f"https://github.com/{clean_repo}/stargazers",
+        "forks": f"https://github.com/{clean_repo}/network/members",
+        "issues": f"https://github.com/{clean_repo}/issues",
+        "watchers": f"https://github.com/{clean_repo}/watchers",
+        "version": f"https://github.com/{clean_repo}/releases",
+        "release": f"https://github.com/{clean_repo}/releases",
+        "license": f"https://github.com/{clean_repo}",
+    }
+    def_link = def_links.get(st, f"https://github.com/{clean_repo}")
+
+    fallback_texts = {
+        "stars": "★ STARS",
+        "forks": "FORKS",
+        "issues": "● ISSUES",
+        "license": "LICENSE: MIT",
+        "version": "v1.0.0",
+        "release": "v1.0.0",
+        "watchers": "WATCHERS",
+    }
+    fallback_text = fallback_texts.get(st, st.upper())
+
+    if not auto_fetch:
+        return (fallback_text, def_link)
+
+    if cache_key in _GITHUB_CACHE:
+        return _GITHUB_CACHE[cache_key]
+
+    try:
+        if st in ("version", "release"):
+            url = f"https://api.github.com/repos/{clean_repo}/releases/latest"
+            data, err = _github_request(url)
+            if data and isinstance(data, dict):
+                tag = data.get("tag_name") or data.get("name") or "v1.0"
+                res = (str(tag), def_link)
+                _GITHUB_CACHE[cache_key] = res
+                return res
+        else:
+            rdata, err = fetch_repo_data(clean_repo)
+            if rdata and isinstance(rdata, dict):
+                if st == "stars":
+                    count = format_count(rdata.get("stars", 0))
+                    res = (f"★ {count}", def_link)
+                elif st == "forks":
+                    count = format_count(rdata.get("forks", 0))
+                    res = (f"FORKS: {count}", def_link)
+                elif st == "issues":
+                    count = format_count(rdata.get("open_issues", 0))
+                    res = (f"● ISSUES: {count}", def_link)
+                elif st == "watchers":
+                    count = format_count(rdata.get("watchers", 0))
+                    res = (f"WATCHERS: {count}", def_link)
+                elif st == "license":
+                    lic = rdata.get("license") or "MIT"
+                    res = (f"LICENSE: {lic}", def_link)
+                else:
+                    res = (f"{st.upper()}", def_link)
+
+                _GITHUB_CACHE[cache_key] = res
+                return res
+    except Exception:
+        pass
+
+    return (fallback_text, def_link)
+

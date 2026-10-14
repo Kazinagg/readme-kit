@@ -49,7 +49,7 @@ def _generate_modern_metrics(style_name, theme_name, c, css_vars, metrics=None, 
     for i, m in enumerate(card_list):
         x = 2 + i * (card_w + gap)
         label = escape_xml(m.get("label", f"METRIC {i+1}").upper())
-        val = escape_xml(m.get("value", "--"))
+        val = escape_xml(m.get("value") or m.get("val") or "--")
         delta = m.get("delta")
         trend = str(m.get("trend", "")).lower()
         status = m.get("status")
@@ -289,7 +289,7 @@ def _generate_sketch_metrics(style_name, theme_name, c, css_vars, metrics=None, 
     for i, m in enumerate(card_list):
         x = 2 + i * (card_w + gap)
         label = escape_xml(m.get("label", f"METRIC {i+1}").upper())
-        val = escape_xml(m.get("value", "--"))
+        val = escape_xml(m.get("value") or m.get("val") or "--")
         delta = m.get("delta")
         trend = str(m.get("trend", "")).lower()
         status = m.get("status")
@@ -542,7 +542,7 @@ def generate_metrics(metrics=None, cards=None, style=None, primary=None, accent=
     for i, m in enumerate(card_list):
         x = 1 + i * (card_w + gap)
         label = escape_xml(m.get("label", f"METRIC {i+1}").upper())
-        val = escape_xml(m.get("value", "--"))
+        val = escape_xml(m.get("value") or m.get("val") or "--")
         delta = m.get("delta")
         trend = str(m.get("trend", "")).lower()
         status = m.get("status")

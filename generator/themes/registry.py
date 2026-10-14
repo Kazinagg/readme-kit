@@ -762,19 +762,19 @@ BASE_THEME_PALETTES: Dict[str, Dict[str, Dict[str, str]]] = {
     },
     "rough-doodle": {
         "dark": {
-            "bg": "rgba(18, 18, 18, 0.95)",
-            "panel": "rgba(28, 28, 28, 0.90)",
-            "border": "#E0E0E0",
-            "primary": "#A78BFA",
-            "accent": "#6EE7B7",
-            "tertiary": "#FDE047",
-            "title_front": "#F3F4F6",
-            "title_mid": "#E0E0E0",
-            "title_dark": "#A78BFA",
-            "text_main": "#F3F4F6",
-            "text_dim": "#9CA3AF",
-            "success": "#6EE7B7",
-            "warning": "#FDE047",
+            "bg": "rgba(28, 30, 36, 0.95)",
+            "panel": "rgba(38, 41, 50, 0.90)",
+            "border": "#94A3B8",
+            "primary": "#818CF8",
+            "accent": "#34D399",
+            "tertiary": "#FBBF24",
+            "title_front": "#F8FAFC",
+            "title_mid": "#94A3B8",
+            "title_dark": "#818CF8",
+            "text_main": "#F8FAFC",
+            "text_dim": "#94A3B8",
+            "success": "#34D399",
+            "warning": "#FBBF24",
             "grid_op": "0.06"
         },
         "light": {
@@ -998,14 +998,14 @@ class ThemeRegistry:
             self.presets_dir = presets_dir
         else:
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            cand_root = os.path.abspath(os.path.join(base_dir, "..", "..", "presets"))
             cand_pkg = os.path.abspath(os.path.join(base_dir, "..", "presets"))
-            if os.path.isdir(cand_root):
-                self.presets_dir = cand_root
-            elif os.path.isdir(cand_pkg):
+            cand_root = os.path.abspath(os.path.join(base_dir, "..", "..", "presets"))
+            if os.path.isdir(cand_pkg):
                 self.presets_dir = cand_pkg
-            else:
+            elif os.path.isdir(cand_root):
                 self.presets_dir = cand_root
+            else:
+                self.presets_dir = cand_pkg
 
         self._palettes: Dict[str, Dict[str, Dict[str, str]]] = {
             k: {m: dict(v[m]) for m in v} for k, v in BASE_THEME_PALETTES.items()
@@ -1209,22 +1209,24 @@ class ThemeRegistry:
                 "warning": "var(--warning)",
                 "grid_op": "var(--grid-op)"
             }
+            is_light_first = canonical in ("rough-doodle", "academic-paper", "whiteboard")
+            root_vals = light_vals if is_light_first else dark_vals
             css_vars = f"""
       :root {{
-        --bg-glass: {dark_vals['bg']};
-        --bg-panel: {dark_vals['panel']};
-        --border-chassis: {dark_vals['border']};
-        --primary: {dark_vals['primary']};
-        --accent: {dark_vals['accent']};
-        --tertiary: {dark_vals['tertiary']};
-        --title-front: {dark_vals['title_front']};
-        --title-mid: {dark_vals['title_mid']};
-        --title-dark: {dark_vals['title_dark']};
-        --text-main: {dark_vals['text_main']};
-        --text-dim: {dark_vals['text_dim']};
-        --status: {dark_vals['success']};
-        --warning: {dark_vals['warning']};
-        --grid-op: {dark_vals['grid_op']};
+        --bg-glass: {root_vals['bg']};
+        --bg-panel: {root_vals['panel']};
+        --border-chassis: {root_vals['border']};
+        --primary: {root_vals['primary']};
+        --accent: {root_vals['accent']};
+        --tertiary: {root_vals['tertiary']};
+        --title-front: {root_vals['title_front']};
+        --title-mid: {root_vals['title_mid']};
+        --title-dark: {root_vals['title_dark']};
+        --text-main: {root_vals['text_main']};
+        --text-dim: {root_vals['text_dim']};
+        --status: {root_vals['success']};
+        --warning: {root_vals['warning']};
+        --grid-op: {root_vals['grid_op']};
       }}
       @media (prefers-color-scheme: dark) {{
         :root {{
@@ -1264,7 +1266,7 @@ class ThemeRegistry:
       }}
       @media (hover: hover) {{
         .btn-hover:hover, a:hover polygon, a:hover rect {{
-          filter: drop-shadow(0 0 6px var(--primary, {dark_vals['primary']}));
+          filter: drop-shadow(0 0 6px var(--primary, {root_vals['primary']}));
           cursor: pointer;
           transition: filter 0.2s ease;
         }}

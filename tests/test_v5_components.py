@@ -119,7 +119,9 @@ class TestV5Presets(unittest.TestCase):
         v5_presets = ["clean-mono", "corporate-blue", "academic-paper", "modern-slate"]
         for p in v5_presets:
             with self.subTest(preset=p):
-                preset_path = os.path.join(os.path.dirname(__file__), "..", "presets", f"{p}.json")
+                preset_path = os.path.join(os.path.dirname(__file__), "..", "generator", "presets", f"{p}.json")
+                if not os.path.exists(preset_path):
+                    preset_path = os.path.join(os.path.dirname(__file__), "..", "presets", f"{p}.json")
                 self.assertTrue(os.path.exists(preset_path), f"Preset file {preset_path} missing")
                 self.assertIn(p, THEMES, f"Theme {p} not registered in palettes.THEMES")
                 self.assertIn(p, THEME_PALETTES, f"Theme {p} not registered in engine.THEME_PALETTES")

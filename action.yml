@@ -60,4 +60,4 @@ runs:
         if [ "${{ inputs.clean-assets }}" = "true" ]; then
           ARGS="$ARGS --clean-assets"
         fi
-        pixel-kit compile $ARGS
+        readme-kit compile $ARGS || pixel-kit compile $ARGS

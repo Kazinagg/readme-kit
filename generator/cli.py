@@ -402,26 +402,30 @@ def cmd_init(args):
     category = getattr(args, "category", None)
     title = args.title
     if not ptype:
-        print("\n=== README KIT SCAFFOLDER v5.0 ===")
+        print("\n=== README KIT SCAFFOLDER v5.1 ===")
         print("Select template type:")
         print("--- REPOSITORIES (repo/) ---")
         print("1. repo/library   (Open Source package / SDK / modular component)")
         print("2. repo/cli       (Command-line utility / terminal tool)")
         print("3. repo/study     (Laboratory report / student dossier / coursework)")
         print("4. repo/minimal   (Clean corporate / minimal repository)")
+        print("5. repo/modern    (Modern clean SaaS / WebApp repository)")
+        print("6. repo/sketch    (Hand-drawn Excalidraw sketch repository)")
         print("--- PROFILES (profile/) ---")
-        print("5. profile/dev    (Comprehensive developer profile / username/username)")
-        print("6. profile/min    (Clean minimalist developer profile)")
-        print("7. profile/cyber  (Futuristic HUD / cyber developer profile)")
-        choice = input("Enter choice [1-7] (default: 1): ").strip()
+        print("7. profile/dev    (Comprehensive developer profile / username/username)")
+        print("8. profile/min    (Clean minimalist developer profile)")
+        print("9. profile/cyber  (Futuristic HUD / cyber developer profile)")
+        choice = input("Enter choice [1-9] (default: 1): ").strip()
         mapping = {
             "1": "repo/library",
             "2": "repo/cli",
             "3": "repo/study",
             "4": "repo/minimal",
-            "5": "profile/developer",
-            "6": "profile/minimal",
-            "7": "profile/cyberpunk",
+            "5": "repo/modern",
+            "6": "repo/sketch",
+            "7": "profile/developer",
+            "8": "profile/minimal",
+            "9": "profile/cyberpunk",
         }
         ptype = mapping.get(choice, "repo/library")
 
@@ -460,13 +464,13 @@ def cmd_init(args):
 
 def build_parser():
     parser = argparse.ArgumentParser(
-        prog="pixel-kit",
-        description="Pixel Readme Kit v3.0 — Multi-Mode Cyberpunk / Tactical / Minimal HUD Generator & Markdown Compiler"
+        prog="readme-kit",
+        description="ReadmeKit v5.1.0 — Multi-Style Translucent HUD & Multi-Paradigm Markdown Compiler"
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Block type or compiler action")
     mode_choices = ["auto", "dark", "light", "transparent", "gh", "picture"]
-    style_choices = ["pixel", "modern", "corporate", "cyberpunk", "tactical", "minimal"]
+    style_choices = ["pixel", "modern", "corporate", "sketch", "doodle", "cyberpunk", "tactical", "minimal"]
 
     # 1. HEADER
     p_hdr = subparsers.add_parser("header", help="Generate flagship header banner")

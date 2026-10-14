@@ -22,13 +22,15 @@ from generator.engine import (
     generate_starchart,
     generate_profile_card,
 )
+from generator.themes import normalize_style_and_theme
 
 
 def handle_render_request(handler, query: Dict[str, list]) -> None:
     """Dispatches /api/render query parameters to appropriate SVG generator."""
     btype = query.get("block_type", ["header"])[0].lower()
-    style = query.get("style", ["cyberpunk"])[0]
-    theme = query.get("theme", [None])[0] or None
+    raw_style = query.get("style", ["cyberpunk"])[0]
+    raw_theme = query.get("theme", [None])[0] or None
+    style, theme = normalize_style_and_theme(style=raw_style, theme=raw_theme)
     mode = query.get("mode", ["auto"])[0]
     preset = query.get("preset", [None])[0] or None
     primary = query.get("primary", [None])[0] or None
@@ -121,7 +123,7 @@ def handle_render_request(handler, query: Dict[str, list]) -> None:
             svg = generate_splitter(style=style, theme=theme, mode=mode, preset=preset, primary=primary, accent=accent, label=label)
         elif btype == "metrics":
             cards = []
-            raw_items = items or body
+            raw_items = items or body or query.get("metrics", [None])[0] or query.get("cards", [None])[0]
             if raw_items:
                 for line in raw_items.splitlines() if "\n" in raw_items else raw_items.split("|"):
                     item = line.strip()

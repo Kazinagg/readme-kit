@@ -1,5 +1,13 @@
 """
-Pixel Readme Kit Generator Package
+ReadmeKit Generator Skill Proxy
+Redirects all imports and calls to the root generator package.
 """
+import os
+import sys
 
-__version__ = "4.2.0"
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+from generator import *
+from generator import __version__

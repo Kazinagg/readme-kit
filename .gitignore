@@ -11,3 +11,5 @@ scratch/
 !.agents/skills/pixel-readme/
 dist/
 build/
+.studio_preview.md
+**/.studio_preview.md

@@ -8,7 +8,7 @@ description: "Use this skill whenever the user asks to create, format, style, or
 Этот навык используется AI-агентом для проектирования, стилизации и автоматической сборки GitHub README и профилей в рамках универсальной системы кастомизации **ReadmeKit** (ранее Pixel Readme Kit).
 
 > [!IMPORTANT]
-> **Единый источник правды по геометрии и палитрам**: [DESIGN_SYSTEM.md](file:///d:/ForWorkStudy/Projects/pixel-readme-kit/DESIGN_SYSTEM.md). Всегда сверяйтесь со спецификацией стилей и тем при подборе компонентов.
+> **Единый источник правды по геометрии и палитрам**: [DESIGN_SYSTEM.md](file:///d:/ForWorkStudy/Projects/Readmekit/DESIGN_SYSTEM.md). Всегда сверяйтесь со спецификацией стилей и тем при подборе компонентов.
 
 ---
 

@@ -26,7 +26,7 @@
       "linear-violet":  { primary: "#8b5cf6", accent: "#c084fc", tertiary: "#a855f7" },
       "emerald-clean":  { primary: "#10b981", accent: "#34d399", tertiary: "#059669" },
       "modern-slate":   { primary: "#2dd4bf", accent: "#a78bfa", tertiary: "#f43f5e" },
-      "rough-doodle":   { primary: "#a78bfa", accent: "#6ee7b7", tertiary: "#fde047" },
+      "rough-doodle":   { primary: "#4f46e5", accent: "#059669", tertiary: "#d97706" },
       "excali-dark":    { primary: "#a78bfa", accent: "#6ee7b7", tertiary: "#fde047" },
       whiteboard:       { primary: "#38bdf8", accent: "#f87171", tertiary: "#fbbf24" },
       "notebook-graph": { primary: "#f3f4f6", accent: "#facc15", tertiary: "#fb923c" },

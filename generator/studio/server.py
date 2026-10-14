@@ -1,5 +1,5 @@
 """
-HUD Studio HTTP Server for Pixel Readme Kit.
+HUD Studio HTTP Server for ReadmeKit v5.1.
 Handles live browser preview, template editing API, theme creation, and asset compilation.
 """
 
@@ -32,6 +32,14 @@ STUDIO_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(STUDIO_DIR, "..", ".."))
 STATIC_DIR = os.path.join(STUDIO_DIR, "static")
 
+def is_protected_template(path: str) -> bool:
+    """Checks whether the template path points to canonical starter templates inside generator/templates."""
+    if not path:
+        return False
+    full = os.path.abspath(os.path.join(PROJECT_ROOT, path)) if not os.path.isabs(path) else os.path.abspath(path)
+    tpl_dir = os.path.abspath(os.path.join(PROJECT_ROOT, "generator", "templates"))
+    return full == tpl_dir or full.startswith(tpl_dir + os.sep)
+
 # Load STUDIO_HTML from static/index.html (inlining CSS and JS for 100% standalone reliability)
 def _load_studio_html() -> str:
     html_path = os.path.join(STATIC_DIR, "index.html")
@@ -62,14 +70,63 @@ def _load_studio_html() -> str:
 STUDIO_HTML = _load_studio_html()
 
 
+def _extract_media_block(css_or_svg: str, media_pattern: str):
+    """
+    Finds a media block matching media_pattern, returns (inner_content, text_without_media_block).
+    Uses brace-depth counting to handle arbitrary nesting safely.
+    """
+    m = re.search(media_pattern, css_or_svg, re.IGNORECASE)
+    if not m:
+        return None, css_or_svg
+
+    start_idx = css_or_svg.find('{', m.end())
+    if start_idx == -1:
+        return None, css_or_svg
+
+    depth = 0
+    end_idx = -1
+    for i in range(start_idx, len(css_or_svg)):
+        if css_or_svg[i] == '{':
+            depth += 1
+        elif css_or_svg[i] == '}':
+            depth -= 1
+            if depth == 0:
+                end_idx = i + 1
+                break
+
+    if end_idx == -1:
+        return None, css_or_svg
+
+    inner_content = css_or_svg[start_idx + 1:end_idx - 1]
+    new_text = css_or_svg[:m.start()] + css_or_svg[end_idx:]
+    return inner_content, new_text
+
+
 class StudioRequestHandler(SimpleHTTPRequestHandler):
     """Handles HUD Studio API, static asset requests, and interactive editing."""
 
     template_file = "README.template.md"
     output_file = "README.md"
     assets_dir = "assets/generated"
+    is_starter = False
     subscribers = set()
     subscribers_lock = threading.Lock()
+    _known_mtimes = {}
+    _mtime_lock = threading.Lock()
+
+    @classmethod
+    def record_mtime(cls, file_path: str):
+        """Records file mtime into _known_mtimes under lock to prevent redundant watcher compiles."""
+        if not file_path:
+            return
+        abs_p = os.path.abspath(file_path)
+        if os.path.exists(abs_p):
+            try:
+                mt = os.path.getmtime(abs_p)
+                with cls._mtime_lock:
+                    cls._known_mtimes[abs_p] = mt
+            except OSError:
+                pass
 
     def end_headers(self):
         """Ensure no browser or proxy caching for any studio assets or endpoints."""
@@ -87,7 +144,6 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         if path == "/" or path == "/studio":
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
             self.end_headers()
             self.wfile.write(_load_studio_html().encode("utf-8"))
             return
@@ -95,7 +151,10 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         # 2. Static Assets Serving (/static/*)
         if path.startswith("/static/"):
             rel_path = path[len("/static/"):].lstrip("/")
-            file_path = os.path.join(STATIC_DIR, rel_path)
+            file_path = os.path.abspath(os.path.join(STATIC_DIR, rel_path))
+            if not file_path.startswith(os.path.abspath(STATIC_DIR)):
+                self.send_error(403, "Access denied")
+                return
             if os.path.isfile(file_path):
                 content_type = "text/plain"
                 if file_path.endswith(".css"):
@@ -116,7 +175,6 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         if path == "/events":
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream")
-            self.send_header("Cache-Control", "no-cache")
             self.send_header("Connection", "keep-alive")
             self.end_headers()
 
@@ -164,7 +222,6 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                     pass
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
             self.end_headers()
             resp = {
                 "status": "success",
@@ -197,7 +254,6 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             blocks = extract_template_blocks(content)
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             resp = {
                 "status": "success",
@@ -217,10 +273,10 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             root_dir = PROJECT_ROOT if os.path.exists(PROJECT_ROOT) else "."
             for f in sorted(os.listdir(root_dir)):
                 if f.endswith(".template.md"):
-                    items.append({"name": f, "path": f, "is_template": True})
+                    items.append({"name": f, "path": f, "is_template": True, "is_starter": False})
                     seen.add(f)
                 elif f.endswith(".md") and not f.endswith(".template.md") and f in ("README.md", "CATALOG.md", "EXAMPLES.md"):
-                    items.append({"name": f, "path": f, "is_template": False})
+                    items.append({"name": f, "path": f, "is_template": False, "is_starter": False})
                     seen.add(f)
 
             # Check generator/templates for starter templates
@@ -231,7 +287,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                         if f.endswith(".template.md"):
                             rel_p = os.path.relpath(os.path.join(root, f), PROJECT_ROOT).replace("\\", "/")
                             if rel_p not in seen:
-                                items.append({"name": rel_p, "path": rel_p, "is_template": True})
+                                items.append({"name": rel_p, "path": rel_p, "is_template": True, "is_starter": True})
                                 seen.add(rel_p)
 
             cur = getattr(self, "template_file", "README.template.md")
@@ -240,11 +296,11 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             resp = {
                 "status": "success",
                 "current": cur,
+                "is_starter": is_protected_template(cur),
                 "templates": items
             }
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-cache")
             self.end_headers()
             self.wfile.write(json.dumps(resp).encode("utf-8"))
             return
@@ -257,31 +313,71 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 if os.path.exists(candidate):
                     local_path = candidate
 
-            if os.path.exists(local_path):
+            local_full = os.path.abspath(local_path)
+            if not local_full.startswith(PROJECT_ROOT):
+                self.send_error(403, "Access denied")
+                return
+
+            if os.path.exists(local_full) and os.path.isfile(local_full):
                 try:
-                    with open(local_path, "r", encoding="utf-8", errors="replace") as f:
+                    with open(local_full, "r", encoding="utf-8", errors="replace") as f:
                         svg_data = f.read()
                     req_theme = query.get("theme", [None])[0]
                     if req_theme == "light":
-                        svg_data = re.sub(r'@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{[\s\S]*?\}\s*\}', '', svg_data)
+                        _, svg_data = _extract_media_block(svg_data, r'@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)')
                     elif req_theme == "dark":
-                        m_dark = re.search(r'@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{\s*:root\s*\{([\s\S]*?)\}\s*\}', svg_data)
-                        if m_dark:
-                            dark_vars = m_dark.group(1)
-                            svg_data = re.sub(r':root\s*\{[\s\S]*?\}', f':root {{{dark_vars}}}', svg_data, count=1)
-                            svg_data = re.sub(r'@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)\s*\{[\s\S]*?\}\s*\}', '', svg_data)
+                        dark_content, svg_data_no_dark = _extract_media_block(svg_data, r'@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)')
+                        if dark_content:
+                            m_dark = re.search(r':root\s*\{([\s\S]*?)\}', dark_content)
+                            if m_dark:
+                                dark_vars = m_dark.group(1)
+                                svg_data = re.sub(r':root\s*\{[\s\S]*?\}', f':root {{{dark_vars}}}', svg_data_no_dark, count=1)
+                            else:
+                                svg_data = svg_data_no_dark
 
                     self.send_response(200)
                     self.send_header("Content-Type", "image/svg+xml; charset=utf-8")
-                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0")
                     self.end_headers()
                     self.wfile.write(svg_data.encode("utf-8"))
                     return
                 except Exception:
                     pass
 
-        # 10. Fallback to standard file serving
-        return super().do_GET()
+        # 10. Restricted static file serving fallback (assets/ and docs/ directories only)
+        safe_exts = {
+            ".svg": "image/svg+xml; charset=utf-8",
+            ".png": "image/png",
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".gif": "image/gif",
+            ".webp": "image/webp",
+            ".ico": "image/x-icon",
+            ".html": "text/html; charset=utf-8",
+            ".css": "text/css; charset=utf-8",
+            ".js": "application/javascript; charset=utf-8",
+            ".json": "application/json; charset=utf-8",
+            ".md": "text/markdown; charset=utf-8",
+        }
+        clean_rel = path.lstrip("/\\").replace("\\", "/")
+        allowed_dirs = ("assets/", "docs/")
+        if any(clean_rel.startswith(pfx) for pfx in allowed_dirs):
+            target_path = os.path.abspath(os.path.join(PROJECT_ROOT, clean_rel))
+            if target_path.startswith(PROJECT_ROOT) and os.path.isfile(target_path):
+                ext = os.path.splitext(target_path)[1].lower()
+                if ext in safe_exts:
+                    try:
+                        with open(target_path, "rb") as f:
+                            data = f.read()
+                        self.send_response(200)
+                        self.send_header("Content-Type", safe_exts[ext])
+                        self.send_header("Content-Length", str(len(data)))
+                        self.end_headers()
+                        self.wfile.write(data)
+                        return
+                    except Exception:
+                        pass
+
+        self.send_error(404, "File not found")
 
     def do_POST(self):
         url = urllib.parse.urlparse(self.path)
@@ -296,10 +392,17 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             return
 
         if path == "/api/template/apply_global_theme":
+            if is_protected_template(self.template_file):
+                self.send_error(403, "Starter templates in generator/templates/ are read-only. Copy to project root to edit.")
+                return
             content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length).decode("utf-8")
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
-                req = json.loads(body)
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
                 if not os.path.exists(self.template_file):
                     self.send_error(404, "Template file not found")
                     return
@@ -310,6 +413,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 with open(self.template_file, "w", encoding="utf-8") as f:
                     f.write(updated_content)
 
+                self.record_mtime(self.template_file)
                 self.trigger_compile()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -321,14 +425,22 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         if path == "/api/insert":
+            if is_protected_template(self.template_file):
+                self.send_error(403, "Starter templates in generator/templates/ are read-only. Copy to project root to edit.")
+                return
             content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length).decode("utf-8")
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
-                req = json.loads(body)
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
                 directive = req.get("directive", "")
                 if os.path.exists(self.template_file):
                     with open(self.template_file, "a", encoding="utf-8") as f:
                         f.write(f"\n{directive}\n")
+                    self.record_mtime(self.template_file)
                     self.trigger_compile()
                     self.send_response(200)
                     self.send_header("Content-Type", "application/json")
@@ -343,10 +455,17 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         if path == "/api/template/update_block":
+            if is_protected_template(self.template_file):
+                self.send_error(403, "Starter templates in generator/templates/ are read-only. Copy to project root to edit.")
+                return
             content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length).decode("utf-8")
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
-                req = json.loads(body)
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
                 blk_id = int(req.get("id", -1))
                 new_raw = req.get("directive_raw", "")
                 if not os.path.exists(self.template_file):
@@ -362,6 +481,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 new_content = content[:target["start"]] + new_raw + content[target["end"]:]
                 with open(self.template_file, "w", encoding="utf-8") as f:
                     f.write(new_content)
+                self.record_mtime(self.template_file)
                 self.trigger_compile()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -373,10 +493,17 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         if path == "/api/template/delete_block":
+            if is_protected_template(self.template_file):
+                self.send_error(403, "Starter templates in generator/templates/ are read-only. Copy to project root to edit.")
+                return
             content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length).decode("utf-8")
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
-                req = json.loads(body)
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
                 blk_id = int(req.get("id", -1))
                 if not os.path.exists(self.template_file):
                     self.send_error(404, "Template file not found")
@@ -395,6 +522,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 new_content = content[:start] + content[end:]
                 with open(self.template_file, "w", encoding="utf-8") as f:
                     f.write(new_content)
+                self.record_mtime(self.template_file)
                 self.trigger_compile()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -406,10 +534,17 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         if path == "/api/template/insert_block":
+            if is_protected_template(self.template_file):
+                self.send_error(403, "Starter templates in generator/templates/ are read-only. Copy to project root to edit.")
+                return
             content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length).decode("utf-8")
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
-                req = json.loads(body)
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
                 after_id = int(req.get("after_id", -1))
                 directive_raw = req.get("directive_raw", "").strip()
                 if not directive_raw:
@@ -433,6 +568,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
 
                 with open(self.template_file, "w", encoding="utf-8") as f:
                     f.write(new_content)
+                self.record_mtime(self.template_file)
                 self.trigger_compile()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -446,38 +582,61 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         # New Theme API routes
         if path == "/api/themes/generate":
             content_length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(content_length).decode("utf-8")) if content_length > 0 else {}
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            try:
+                body = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
             handle_theme_generate(self, body)
             return
 
         if path == "/api/themes/save":
             content_length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(content_length).decode("utf-8")) if content_length > 0 else {}
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            try:
+                body = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
             handle_theme_save(self, body)
             return
 
         if path == "/api/template/switch":
             content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
             try:
-                req = json.loads(body)
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
                 target_path = (req.get("path") or req.get("file") or "").strip()
                 if not target_path:
                     self.send_error(400, "Missing path in request")
                     return
                 # Normalize relative to workspace root if needed
-                full_path = os.path.join(PROJECT_ROOT, target_path) if not os.path.isabs(target_path) else target_path
+                full_path = os.path.abspath(os.path.join(PROJECT_ROOT, target_path)) if not os.path.isabs(target_path) else os.path.abspath(target_path)
+                if not full_path.startswith(PROJECT_ROOT):
+                    self.send_error(403, "Access denied: outside project root")
+                    return
+                if not full_path.endswith(".md"):
+                    self.send_error(400, "Invalid file type: must be a markdown file")
+                    return
                 if not os.path.exists(full_path):
-                    # Check relative to cwd
-                    if os.path.exists(target_path):
-                        full_path = target_path
-                    else:
-                        self.send_error(404, f"File not found: {target_path}")
-                        return
+                    self.send_error(404, f"File not found: {target_path}")
+                    return
 
-                rel_target = os.path.relpath(full_path, PROJECT_ROOT).replace("\\", "/") if full_path.startswith(PROJECT_ROOT) else target_path
+                rel_target = os.path.relpath(full_path, PROJECT_ROOT).replace("\\", "/")
                 StudioRequestHandler.template_file = rel_target
-                if rel_target.endswith(".template.md"):
+                is_starter = is_protected_template(rel_target)
+                StudioRequestHandler.is_starter = is_starter
+
+                if is_starter:
+                    # NEVER compile or write .md into generator/templates/!
+                    preview_out = os.path.join(self.assets_dir, ".studio_preview.md")
+                    StudioRequestHandler.output_file = preview_out
+                elif rel_target.endswith(".template.md"):
                     StudioRequestHandler.output_file = rel_target[:-len(".template.md")] + ".md"
                 elif rel_target.endswith(".md"):
                     StudioRequestHandler.output_file = rel_target
@@ -488,6 +647,8 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                         and StudioRequestHandler.template_file != StudioRequestHandler.output_file):
                     compiler = MarkdownCompiler(assets_dir=self.assets_dir, use_cache=True)
                     compiler.compile_file(StudioRequestHandler.template_file, StudioRequestHandler.output_file)
+                    StudioRequestHandler.record_mtime(StudioRequestHandler.template_file)
+                    StudioRequestHandler.record_mtime(StudioRequestHandler.output_file)
 
                 # Broadcast reload to all connected clients
                 self.trigger_compile()
@@ -498,11 +659,62 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({
                     "status": "switched",
                     "template": StudioRequestHandler.template_file,
-                    "output": StudioRequestHandler.output_file
+                    "output": StudioRequestHandler.output_file,
+                    "is_starter": is_starter
                 }).encode("utf-8"))
                 return
             except Exception as e:
                 self.send_error(500, f"Switch template error: {e}")
+                return
+
+        if path == "/api/template/clone":
+            content_length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
+            try:
+                req = json.loads(raw_body)
+            except (json.JSONDecodeError, ValueError) as e:
+                self.send_error(400, f"Invalid JSON payload: {e}")
+                return
+            try:
+                src_path = (req.get("src") or req.get("source") or self.template_file or "").strip()
+                dest_name = (req.get("dest") or req.get("target") or os.path.basename(src_path)).strip()
+                if not dest_name.endswith(".template.md") and not dest_name.endswith(".md"):
+                    dest_name += ".template.md"
+                dest_full = os.path.abspath(os.path.join(PROJECT_ROOT, dest_name))
+                if not dest_full.startswith(PROJECT_ROOT) or is_protected_template(dest_full):
+                    self.send_error(403, "Access denied: destination cannot be in package templates")
+                    return
+                src_full = os.path.abspath(os.path.join(PROJECT_ROOT, src_path)) if not os.path.isabs(src_path) else os.path.abspath(src_path)
+                if not os.path.exists(src_full):
+                    self.send_error(404, f"Source template not found: {src_path}")
+                    return
+                import shutil
+                shutil.copyfile(src_full, dest_full)
+                rel_dest = os.path.relpath(dest_full, PROJECT_ROOT).replace("\\", "/")
+                StudioRequestHandler.template_file = rel_dest
+                StudioRequestHandler.is_starter = False
+                if rel_dest.endswith(".template.md"):
+                    StudioRequestHandler.output_file = rel_dest[:-len(".template.md")] + ".md"
+                else:
+                    StudioRequestHandler.output_file = rel_dest
+
+                compiler = MarkdownCompiler(assets_dir=self.assets_dir, use_cache=True)
+                compiler.compile_file(StudioRequestHandler.template_file, StudioRequestHandler.output_file)
+                StudioRequestHandler.record_mtime(StudioRequestHandler.template_file)
+                StudioRequestHandler.record_mtime(StudioRequestHandler.output_file)
+                self.trigger_compile()
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "status": "cloned",
+                    "template": StudioRequestHandler.template_file,
+                    "output": StudioRequestHandler.output_file
+                }).encode("utf-8"))
+                return
+            except Exception as e:
+                self.send_error(500, f"Clone template error: {e}")
                 return
 
         if path == "/api/git/push_readme":
@@ -540,6 +752,8 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             try:
                 compiler = MarkdownCompiler(assets_dir=cls.assets_dir, use_cache=False, bust_cache=True)
                 compiler.compile_file(cls.template_file, cls.output_file)
+                cls.record_mtime(cls.template_file)
+                cls.record_mtime(cls.output_file)
             except Exception as e:
                 print(f"[Studio] Compilation error: {e}", file=sys.stderr)
 
@@ -570,7 +784,6 @@ class ThreadedStudioServer(ThreadingMixIn, HTTPServer):
 def start_file_watcher(template_path: str, handler_class, poll_interval: float = 0.5):
     """Background thread watching active template file mtime to trigger auto-reloads safely."""
     def watcher_loop():
-        known_mtimes = {}
         last_tracked_path = None
 
         while True:
@@ -579,21 +792,29 @@ def start_file_watcher(template_path: str, handler_class, poll_interval: float =
             if not os.path.exists(active_path):
                 continue
 
+            abs_active = os.path.abspath(active_path)
             try:
-                mtime = os.path.getmtime(active_path)
+                mtime = os.path.getmtime(abs_active)
             except OSError:
                 continue
 
             # If active template changed, initialize its mtime baseline without triggering reload
-            if active_path != last_tracked_path:
-                last_tracked_path = active_path
-                known_mtimes[active_path] = mtime
+            if abs_active != last_tracked_path:
+                last_tracked_path = abs_active
+                with handler_class._mtime_lock:
+                    handler_class._known_mtimes[abs_active] = mtime
                 continue
 
             # Check if current active template was modified externally
-            prev_mtime = known_mtimes.get(active_path, 0)
-            if mtime > prev_mtime:
-                known_mtimes[active_path] = mtime
+            with handler_class._mtime_lock:
+                prev_mtime = handler_class._known_mtimes.get(abs_active, 0)
+                if mtime > prev_mtime:
+                    handler_class._known_mtimes[abs_active] = mtime
+                    is_new = True
+                else:
+                    is_new = False
+
+            if is_new:
                 handler_class.trigger_compile()
 
     t = threading.Thread(target=watcher_loop, daemon=True)

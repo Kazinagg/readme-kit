@@ -52,8 +52,8 @@
      - Оформление библиотек, CLI-утилит, веб-сервисов, монорепозиториев и аналитических отчетов.
      - Модульные окна контента с копируемым Markdown внутри, сворачиваемые интерактивные терминалы, матрицы стека технологий, плашки алертов, KPI-метрики и футеры.
   2. **Оформление профилей разработчиков (Developer Profiles & Portfolios)**:
-     - Флагманские досье-карточки профиля (`<img src="assets/generated/profile-cyberpunk-1.svg?v=f70c16ef" width="100%" alt="ALEX DEVELOPER" />`) с аватаром, LED-индикатором статуса, специализацией, локацией и био.
-     - График динамики звёзд и активности (`<img src="assets/generated/starchart-cyberpunk-1.svg?v=bd2f3a79" width="100%" alt="STAR GROWTH TRAJECTORY" />`) с гладкими кривыми Безье, координатной сеткой и градиентной заливкой.
+     - Флагманские досье-карточки профиля (`readme-kit:profile`) с аватаром, LED-индикатором статуса, специализацией, локацией и био.
+     - График динамики звёзд и активности (`readme-kit:starchart`) с гладкими кривыми Безье, координатной сеткой и градиентной заливкой.
      - Витрины ключевых проектов, OpenGraph превью-карточки (1280x640) и социальные чипы.
 
 <br/>
@@ -70,7 +70,7 @@
 ### 2. Hand-Drawn Sketch Style — График динамики звёзд
 > ✏️ **Стиль Sketch (`style="sketch" theme="excali-dark"`):** Живой рукописный штрих (Rough Jitter), двойные контуры, карандашная штриховка и шрифт заметок.
 
-<img src="assets/generated/starchart-readme-demo.svg?v=3d18d678" width="100%" alt="OPEN SOURCE STARS TRAJECTORY" />
+<img src="assets/generated/starchart-readme-demo.svg?v=6c3eeec7" width="100%" alt="OPEN SOURCE STARS TRAJECTORY" />
 
 <br/>
 
