@@ -70,7 +70,7 @@
 ### 2. Hand-Drawn Sketch Style — График динамики звёзд
 > ✏️ **Стиль Sketch (`style="sketch" theme="excali-dark"`):** Живой рукописный штрих (Rough Jitter), двойные контуры, карандашная штриховка и шрифт заметок.
 
-<img src="assets/generated/starchart-readme-demo.svg?v=6c3eeec7" width="100%" alt="OPEN SOURCE STARS TRAJECTORY" />
+<img src="assets/generated/starchart-readme-demo.svg?v=3d18d678" width="100%" alt="OPEN SOURCE STARS TRAJECTORY" />
 
 <br/>
 

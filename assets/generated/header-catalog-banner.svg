@@ -3,25 +3,25 @@
     <style>
       
       :root {
-        --bg-glass: rgba(23, 25, 30, 0.94);
-        --bg-panel: rgba(28, 28, 28, 0.90);
-        --border-chassis: #CBD5E1;
-        --primary: #f3f4f6;
-        --accent: #facc15;
-        --tertiary: #fb923c;
-        --title-front: #f3f4f6;
-        --title-mid: #6d6d6e;
-        --title-dark: #242424;
-        --text-main: #F3F4F6;
-        --text-dim: #9CA3AF;
-        --status: #4ADE80;
-        --warning: #FACC15;
+        --bg-glass: #FDFDFD;
+        --bg-panel: #F4F4F5;
+        --border-chassis: #1F2937;
+        --primary: #aaaaac;
+        --accent: #af8e0e;
+        --tertiary: #af662a;
+        --title-front: #aaaaac;
+        --title-mid: #666667;
+        --title-dark: #333333;
+        --text-main: #111827;
+        --text-dim: #4B5563;
+        --status: #339b59;
+        --warning: #af8e0e;
         --grid-op: 0.06;
       }
       @media (prefers-color-scheme: dark) {
         :root {
           --bg-glass: rgba(23, 25, 30, 0.94);
-          --bg-panel: rgba(28, 28, 28, 0.90);
+          --bg-panel: rgba(38, 41, 50, 0.90);
           --border-chassis: #CBD5E1;
           --primary: #f3f4f6;
           --accent: #facc15;
@@ -29,8 +29,8 @@
           --title-front: #f3f4f6;
           --title-mid: #6d6d6e;
           --title-dark: #242424;
-          --text-main: #F3F4F6;
-          --text-dim: #9CA3AF;
+          --text-main: #F8FAFC;
+          --text-dim: #94A3B8;
           --status: #4ADE80;
           --warning: #FACC15;
           --grid-op: 0.06;
@@ -56,7 +56,7 @@
       }
       @media (hover: hover) {
         .btn-hover:hover, a:hover polygon, a:hover rect {
-          filter: drop-shadow(0 0 6px var(--primary, #f3f4f6));
+          filter: drop-shadow(0 0 6px var(--primary, #aaaaac));
           cursor: pointer;
           transition: filter 0.2s ease;
         }
