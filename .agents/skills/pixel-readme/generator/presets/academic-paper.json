@@ -1,0 +1,12 @@
+{
+  "theme": "academic-paper",
+  "name": "Academic Paper & Research",
+  "paradigm": "academic",
+  "primary": "#60A5FA",
+  "secondary": "#F59E0B",
+  "accent": "#38BDF8",
+  "success": "#10B981",
+  "warning": "#D97706",
+  "bg_glass": "rgba(24, 24, 27, 0.85)",
+  "border_subtle": "rgba(63, 63, 70, 0.85)"
+}

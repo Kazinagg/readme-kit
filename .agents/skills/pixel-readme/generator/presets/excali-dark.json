@@ -1,0 +1,13 @@
+{
+  "theme": "excali-dark",
+  "name": "Excalidraw Dark Blackboard",
+  "paradigm": "sketch",
+  "primary": "#A78BFA",
+  "secondary": "#6EE7B7",
+  "accent": "#6EE7B7",
+  "tertiary": "#FDE047",
+  "success": "#6EE7B7",
+  "warning": "#FDE047",
+  "bg_glass": "rgba(18, 18, 18, 0.95)",
+  "border_subtle": "#E0E0E0"
+}

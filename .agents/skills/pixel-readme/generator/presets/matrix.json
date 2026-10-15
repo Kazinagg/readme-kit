@@ -1,0 +1,11 @@
+{
+  "theme": "matrix",
+  "name": "Emerald Terminal Matrix",
+  "primary": "#00FF66",
+  "secondary": "#00DD44",
+  "accent": "#79FFE1",
+  "success": "#00FF66",
+  "warning": "#FFE600",
+  "bg_glass": "rgba(5, 20, 10, 0.75)",
+  "border_subtle": "rgba(15, 45, 25, 0.85)"
+}

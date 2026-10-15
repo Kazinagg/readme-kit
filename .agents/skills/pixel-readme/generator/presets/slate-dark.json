@@ -1,0 +1,12 @@
+{
+  "theme": "slate-dark",
+  "name": "Slate & Cyan SaaS",
+  "paradigm": "modern",
+  "primary": "#38BDF8",
+  "secondary": "#818CF8",
+  "accent": "#06B6D4",
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(15, 23, 42, 0.90)",
+  "border_subtle": "rgba(51, 65, 85, 0.85)"
+}

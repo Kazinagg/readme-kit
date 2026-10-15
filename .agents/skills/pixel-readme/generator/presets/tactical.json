@@ -1,0 +1,11 @@
+{
+  "theme": "tactical",
+  "name": "Tactical Military HUD",
+  "primary": "#F59E0B",
+  "secondary": "#EA580C",
+  "accent": "#EF4444",
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(20, 14, 6, 0.88)",
+  "border_subtle": "rgba(50, 36, 16, 0.85)"
+}

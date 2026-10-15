@@ -1,0 +1,12 @@
+{
+  "theme": "neon-matrix",
+  "name": "Neon Matrix",
+  "style": "sketch",
+  "primary": "#00e5b0",
+  "secondary": "#b000e5",
+  "accent": "#ffc300",
+  "success": "#00D26A",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(8, 18, 21, 0.82)",
+  "border_subtle": "rgba(25, 45, 55, 0.85)"
+}

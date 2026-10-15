@@ -1,0 +1,13 @@
+{
+  "theme": "notebook-graph",
+  "name": "Engineer Notebook & Graph Paper",
+  "paradigm": "sketch",
+  "primary": "#F3F4F6",
+  "secondary": "#FACC15",
+  "accent": "#FACC15",
+  "tertiary": "#FB923C",
+  "success": "#4ADE80",
+  "warning": "#FACC15",
+  "bg_glass": "rgba(23, 25, 30, 0.94)",
+  "border_subtle": "#CBD5E1"
+}

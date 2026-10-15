@@ -1,0 +1,12 @@
+{
+  "theme": "emerald-clean",
+  "name": "Emerald Clean & Supabase",
+  "paradigm": "modern",
+  "primary": "#10B981",
+  "secondary": "#34D399",
+  "accent": "#059669",
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(6, 20, 16, 0.92)",
+  "border_subtle": "rgba(20, 60, 48, 0.85)"
+}

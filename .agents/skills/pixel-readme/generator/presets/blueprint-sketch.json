@@ -1,0 +1,13 @@
+{
+  "theme": "blueprint-sketch",
+  "name": "Architect Blueprint & Chalk",
+  "paradigm": "sketch",
+  "primary": "#F8FAFC",
+  "secondary": "#38BDF8",
+  "accent": "#38BDF8",
+  "tertiary": "#7DD3FC",
+  "success": "#34D399",
+  "warning": "#FBBF24",
+  "bg_glass": "rgba(15, 23, 42, 0.94)",
+  "border_subtle": "#38BDF8"
+}

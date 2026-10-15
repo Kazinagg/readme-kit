@@ -1,0 +1,11 @@
+{
+  "theme": "cyberpunk",
+  "name": "Kazinagg Cyberpunk Core",
+  "primary": "#00F0FF",
+  "secondary": "#BD93F9",
+  "accent": "#FF0055",
+  "success": "#00FF66",
+  "warning": "#FFE600",
+  "bg_glass": "rgba(10, 14, 23, 0.72)",
+  "border_subtle": "rgba(30, 41, 59, 0.85)"
+}

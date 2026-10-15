@@ -1,0 +1,12 @@
+{
+  "theme": "modern-slate",
+  "name": "Modern Slate & Graphite",
+  "paradigm": "modern",
+  "primary": "#2DD4BF",
+  "secondary": "#A78BFA",
+  "accent": "#F43F5E",
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(15, 23, 30, 0.88)",
+  "border_subtle": "rgba(30, 41, 59, 0.85)"
+}

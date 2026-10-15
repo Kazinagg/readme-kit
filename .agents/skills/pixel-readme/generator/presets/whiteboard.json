@@ -1,0 +1,13 @@
+{
+  "theme": "whiteboard",
+  "name": "Whiteboard Marker & Notes",
+  "paradigm": "sketch",
+  "primary": "#38BDF8",
+  "secondary": "#F87171",
+  "accent": "#F87171",
+  "tertiary": "#FBBF24",
+  "success": "#34D399",
+  "warning": "#FBBF24",
+  "bg_glass": "rgba(24, 24, 27, 0.94)",
+  "border_subtle": "#FAFAFA"
+}

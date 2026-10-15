@@ -1,0 +1,12 @@
+{
+  "theme": "nordic-frost",
+  "name": "Nordic Frost & Arctic Ice",
+  "paradigm": "modern",
+  "primary": "#E0F2FE",
+  "secondary": "#38BDF8",
+  "accent": "#7DD3FC",
+  "success": "#34D399",
+  "warning": "#FBBF24",
+  "bg_glass": "rgba(10, 20, 32, 0.92)",
+  "border_subtle": "rgba(38, 64, 98, 0.85)"
+}

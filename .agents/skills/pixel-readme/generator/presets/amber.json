@@ -1,0 +1,11 @@
+{
+  "theme": "amber",
+  "name": "Retro CRT Phosphor Amber",
+  "primary": "#FFB000",
+  "secondary": "#FF8800",
+  "accent": "#FFE57F",
+  "success": "#79FFE1",
+  "warning": "#FF5500",
+  "bg_glass": "rgba(20, 12, 5, 0.75)",
+  "border_subtle": "rgba(50, 30, 15, 0.85)"
+}

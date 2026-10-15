@@ -1,8 +1,418 @@
-import os
-import sys
+"""
+Color themes and translucent palette tokens for Pixel Readme Kit
+"""
 
-_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
+THEMES = {
+    "cyberpunk": {
+        "name": "Kazinagg Cyberpunk Core",
+        "bg_glass": "rgba(10, 14, 23, 0.82)",
+        "bg_panel": "rgba(15, 23, 38, 0.78)",
+        "bg_chip": "rgba(0, 200, 215, 0.12)",
+        "border_slate": "rgba(30, 41, 59, 0.85)",
+        "primary": "#00C8D7",      # Electric Cyan (High contrast on white & dark)
+        "primary_glow": "rgba(0, 200, 215, 0.35)",
+        "secondary": "#A855F7",    # Neon Cyber Purple
+        "secondary_glow": "rgba(168, 85, 247, 0.35)",
+        "success": "#00D26A",      # Emerald Green
+        "success_glow": "rgba(0, 210, 106, 0.35)",
+        "warning": "#F59E0B",      # Cyber Amber Gold
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#FF0055",       # Laser Magenta / Red
+        "tertiary": "#FF0055",
+        "text_main": "#F8F8F2",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#050B14",
+        "shadow_mid": "#005577",
+    },
+    "matrix": {
+        "name": "Emerald Matrix Terminal",
+        "bg_glass": "rgba(6, 18, 12, 0.82)",
+        "bg_panel": "rgba(12, 28, 18, 0.78)",
+        "bg_chip": "rgba(0, 210, 106, 0.12)",
+        "border_slate": "rgba(20, 45, 25, 0.85)",
+        "primary": "#00D26A",      # Matrix Emerald
+        "primary_glow": "rgba(0, 210, 106, 0.35)",
+        "secondary": "#00E5FF",    # Bright Teal Cyan
+        "secondary_glow": "rgba(0, 229, 255, 0.35)",
+        "success": "#00D26A",
+        "success_glow": "rgba(0, 210, 106, 0.35)",
+        "warning": "#EAB308",      # Cyber Yellow
+        "warning_glow": "rgba(234, 179, 8, 0.35)",
+        "accent": "#FF0055",
+        "tertiary": "#FF0055",
+        "text_main": "#E8FFE8",
+        "text_dim": "#6EE7B7",
+        "shadow_dark": "#020A04",
+        "shadow_mid": "#0A3D18",
+    },
+    "amber": {
+        "name": "Retro Amber Industrial CRT",
+        "bg_glass": "rgba(20, 14, 6, 0.82)",
+        "bg_panel": "rgba(30, 22, 10, 0.78)",
+        "bg_chip": "rgba(245, 158, 11, 0.12)",
+        "border_slate": "rgba(50, 36, 16, 0.85)",
+        "primary": "#F59E0B",      # Phosphor Amber
+        "primary_glow": "rgba(245, 158, 11, 0.35)",
+        "secondary": "#EA580C",    # Phosphor Orange
+        "secondary_glow": "rgba(234, 88, 12, 0.35)",
+        "success": "#10B981",      # Retro Mint
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#D97706",
+        "warning_glow": "rgba(217, 119, 6, 0.35)",
+        "accent": "#EF4444",       # Signal Red
+        "tertiary": "#EF4444",
+        "text_main": "#FFFBEB",
+        "text_dim": "#FCD34D",
+        "shadow_dark": "#0A0702",
+        "shadow_mid": "#4A3305",
+    },
+    "tokyo": {
+        "name": "Tokyo Night Vaporwave",
+        "bg_glass": "rgba(15, 18, 30, 0.82)",
+        "bg_panel": "rgba(22, 27, 46, 0.78)",
+        "bg_chip": "rgba(79, 139, 255, 0.12)",
+        "border_slate": "rgba(41, 46, 66, 0.85)",
+        "primary": "#4F8BFF",      # Tokyo Neon Blue
+        "primary_glow": "rgba(79, 139, 255, 0.35)",
+        "secondary": "#A855F7",    # Tokyo Neon Purple
+        "secondary_glow": "rgba(168, 85, 247, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#06B6D4",       # Cyan Accent
+        "tertiary": "#06B6D4",
+        "text_main": "#F1F5F9",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#0A0C14",
+        "shadow_mid": "#1A2440",
+    },
+    "clean-mono": {
+        "name": "Clean Monochrome Minimal",
+        "bg_glass": "rgba(15, 23, 42, 0.85)",
+        "bg_panel": "rgba(30, 41, 59, 0.80)",
+        "bg_chip": "rgba(226, 232, 240, 0.12)",
+        "border_slate": "rgba(51, 65, 85, 0.85)",
+        "primary": "#E2E8F0",
+        "primary_glow": "rgba(226, 232, 240, 0.35)",
+        "secondary": "#94A3B8",
+        "secondary_glow": "rgba(148, 163, 184, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#F8FAFC",
+        "tertiary": "#CBD5E1",
+        "text_main": "#F8FAFC",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#0F172A",
+        "shadow_mid": "#334155",
+    },
+    "corporate-blue": {
+        "name": "Corporate Tech Blue",
+        "bg_glass": "rgba(15, 23, 42, 0.88)",
+        "bg_panel": "rgba(30, 41, 59, 0.82)",
+        "bg_chip": "rgba(56, 189, 248, 0.12)",
+        "border_slate": "rgba(30, 58, 138, 0.85)",
+        "primary": "#38BDF8",
+        "primary_glow": "rgba(56, 189, 248, 0.35)",
+        "secondary": "#818CF8",
+        "secondary_glow": "rgba(129, 140, 248, 0.35)",
+        "success": "#22C55E",
+        "success_glow": "rgba(34, 197, 94, 0.35)",
+        "warning": "#EAB308",
+        "warning_glow": "rgba(234, 179, 8, 0.35)",
+        "accent": "#0284C7",
+        "tertiary": "#0284C7",
+        "text_main": "#F8F8F2",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#0F172A",
+        "shadow_mid": "#1E3A8A",
+    },
+    "academic-paper": {
+        "name": "Academic Paper & Research",
+        "bg_glass": "rgba(24, 24, 27, 0.88)",
+        "bg_panel": "rgba(39, 39, 42, 0.82)",
+        "bg_chip": "rgba(96, 165, 250, 0.12)",
+        "border_slate": "rgba(63, 63, 70, 0.85)",
+        "primary": "#60A5FA",
+        "primary_glow": "rgba(96, 165, 250, 0.35)",
+        "secondary": "#F59E0B",
+        "secondary_glow": "rgba(245, 158, 11, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#D97706",
+        "warning_glow": "rgba(217, 119, 6, 0.35)",
+        "accent": "#38BDF8",
+        "tertiary": "#38BDF8",
+        "text_main": "#F4F4F5",
+        "text_dim": "#A1A1AA",
+        "shadow_dark": "#18181B",
+        "shadow_mid": "#3F3F46",
+    },
+    "modern-slate": {
+        "name": "Modern Slate & Graphite",
+        "bg_glass": "rgba(15, 23, 30, 0.88)",
+        "bg_panel": "rgba(22, 33, 46, 0.82)",
+        "bg_chip": "rgba(45, 212, 191, 0.12)",
+        "border_slate": "rgba(30, 41, 59, 0.85)",
+        "primary": "#2DD4BF",
+        "primary_glow": "rgba(45, 212, 191, 0.35)",
+        "secondary": "#A78BFA",
+        "secondary_glow": "rgba(167, 139, 250, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#F43F5E",
+        "tertiary": "#F43F5E",
+        "text_main": "#F1F5F9",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#0A0E17",
+        "shadow_mid": "#1E293B",
+    },
+    "tactical": {
+        "name": "Tactical Military HUD",
+        "bg_glass": "rgba(20, 14, 6, 0.88)",
+        "bg_panel": "rgba(30, 22, 10, 0.82)",
+        "bg_chip": "rgba(245, 158, 11, 0.12)",
+        "border_slate": "rgba(50, 36, 16, 0.85)",
+        "primary": "#F59E0B",      # Phosphor Amber
+        "primary_glow": "rgba(245, 158, 11, 0.35)",
+        "secondary": "#EA580C",    # Phosphor Orange
+        "secondary_glow": "rgba(234, 88, 12, 0.35)",
+        "success": "#10B981",      # Retro Mint
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#EF4444",       # Signal Red
+        "tertiary": "#EF4444",
+        "text_main": "#FFFBEB",
+        "text_dim": "#D97706",
+        "shadow_dark": "#0A0702",
+        "shadow_mid": "#4A3305",
+    },
+    "slate-dark": {
+        "name": "Slate & Cyan SaaS",
+        "bg_glass": "rgba(15, 23, 42, 0.90)",
+        "bg_panel": "rgba(30, 41, 59, 0.85)",
+        "bg_chip": "rgba(56, 189, 248, 0.12)",
+        "border_slate": "rgba(51, 65, 85, 0.85)",
+        "primary": "#38BDF8",
+        "primary_glow": "rgba(56, 189, 248, 0.35)",
+        "secondary": "#818CF8",
+        "secondary_glow": "rgba(129, 140, 248, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#06B6D4",
+        "tertiary": "#06B6D4",
+        "text_main": "#F8FAFC",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#0F172A",
+        "shadow_mid": "#1E293B",
+    },
+    "nordic-frost": {
+        "name": "Nordic Frost & Arctic Ice",
+        "bg_glass": "rgba(10, 20, 32, 0.92)",
+        "bg_panel": "rgba(16, 30, 48, 0.85)",
+        "bg_chip": "rgba(56, 189, 248, 0.12)",
+        "border_slate": "rgba(38, 64, 98, 0.85)",
+        "primary": "#E0F2FE",
+        "primary_glow": "rgba(224, 242, 254, 0.35)",
+        "secondary": "#38BDF8",
+        "secondary_glow": "rgba(56, 189, 248, 0.35)",
+        "success": "#34D399",
+        "success_glow": "rgba(52, 211, 153, 0.35)",
+        "warning": "#FBBF24",
+        "warning_glow": "rgba(251, 191, 36, 0.35)",
+        "accent": "#7DD3FC",
+        "tertiary": "#7DD3FC",
+        "text_main": "#F0F9FF",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#060D17",
+        "shadow_mid": "#102030",
+    },
+    "linear-violet": {
+        "name": "Linear Deep Violet",
+        "bg_glass": "rgba(8, 9, 13, 0.94)",
+        "bg_panel": "rgba(18, 19, 29, 0.88)",
+        "bg_chip": "rgba(139, 92, 246, 0.12)",
+        "border_slate": "rgba(45, 43, 67, 0.85)",
+        "primary": "#8B5CF6",
+        "primary_glow": "rgba(139, 92, 246, 0.35)",
+        "secondary": "#C084FC",
+        "secondary_glow": "rgba(192, 132, 252, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#A855F7",
+        "tertiary": "#A855F7",
+        "text_main": "#F5F3FF",
+        "text_dim": "#A78BFA",
+        "shadow_dark": "#05060A",
+        "shadow_mid": "#181726",
+    },
+    "emerald-clean": {
+        "name": "Emerald Clean & Supabase",
+        "bg_glass": "rgba(6, 20, 16, 0.92)",
+        "bg_panel": "rgba(12, 34, 27, 0.86)",
+        "bg_chip": "rgba(16, 185, 129, 0.12)",
+        "border_slate": "rgba(20, 60, 48, 0.85)",
+        "primary": "#10B981",
+        "primary_glow": "rgba(16, 185, 129, 0.35)",
+        "secondary": "#34D399",
+        "secondary_glow": "rgba(52, 211, 153, 0.35)",
+        "success": "#10B981",
+        "success_glow": "rgba(16, 185, 129, 0.35)",
+        "warning": "#F59E0B",
+        "warning_glow": "rgba(245, 158, 11, 0.35)",
+        "accent": "#059669",
+        "tertiary": "#059669",
+        "text_main": "#ECFDF5",
+        "text_dim": "#6EE7B7",
+        "shadow_dark": "#030C0A",
+        "shadow_mid": "#0C241E",
+    },
+    "excali-dark": {
+        "name": "Excalidraw Dark Blackboard",
+        "bg_glass": "rgba(18, 18, 18, 0.95)",
+        "bg_panel": "rgba(28, 28, 28, 0.90)",
+        "bg_chip": "rgba(167, 139, 250, 0.15)",
+        "border_slate": "#E0E0E0",
+        "primary": "#A78BFA",
+        "primary_glow": "rgba(167, 139, 250, 0.35)",
+        "secondary": "#6EE7B7",
+        "secondary_glow": "rgba(110, 231, 183, 0.35)",
+        "success": "#6EE7B7",
+        "success_glow": "rgba(110, 231, 183, 0.35)",
+        "warning": "#FDE047",
+        "warning_glow": "rgba(253, 224, 71, 0.35)",
+        "accent": "#6EE7B7",
+        "tertiary": "#FDE047",
+        "text_main": "#F3F4F6",
+        "text_dim": "#9CA3AF",
+        "shadow_dark": "#0A0A0A",
+        "shadow_mid": "#1A1A1A",
+    },
+    "whiteboard": {
+        "name": "Whiteboard Marker & Notes",
+        "bg_glass": "rgba(24, 24, 27, 0.94)",
+        "bg_panel": "rgba(39, 39, 42, 0.90)",
+        "bg_chip": "rgba(56, 189, 248, 0.15)",
+        "border_slate": "#FAFAFA",
+        "primary": "#38BDF8",
+        "primary_glow": "rgba(56, 189, 248, 0.35)",
+        "secondary": "#F87171",
+        "secondary_glow": "rgba(248, 113, 113, 0.35)",
+        "success": "#34D399",
+        "success_glow": "rgba(52, 211, 153, 0.35)",
+        "warning": "#FBBF24",
+        "warning_glow": "rgba(251, 191, 36, 0.35)",
+        "accent": "#F87171",
+        "tertiary": "#FBBF24",
+        "text_main": "#FAFAFA",
+        "text_dim": "#A1A1AA",
+        "shadow_dark": "#0A0A0C",
+        "shadow_mid": "#18181B",
+    },
+    "notebook-graph": {
+        "name": "Engineer Notebook & Graph Paper",
+        "bg_glass": "rgba(23, 25, 30, 0.94)",
+        "bg_panel": "rgba(33, 37, 44, 0.90)",
+        "bg_chip": "rgba(243, 244, 246, 0.15)",
+        "border_slate": "#CBD5E1",
+        "primary": "#F3F4F6",
+        "primary_glow": "rgba(243, 244, 246, 0.35)",
+        "secondary": "#FACC15",
+        "secondary_glow": "rgba(250, 204, 21, 0.35)",
+        "success": "#4ADE80",
+        "success_glow": "rgba(74, 222, 128, 0.35)",
+        "warning": "#FACC15",
+        "warning_glow": "rgba(250, 204, 21, 0.35)",
+        "accent": "#FACC15",
+        "tertiary": "#FB923C",
+        "text_main": "#F8FAFC",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#0C0D10",
+        "shadow_mid": "#1A1D24",
+    },
+    "blueprint-sketch": {
+        "name": "Architect Blueprint & Chalk",
+        "bg_glass": "rgba(15, 23, 42, 0.94)",
+        "bg_panel": "rgba(24, 35, 60, 0.90)",
+        "bg_chip": "rgba(56, 189, 248, 0.15)",
+        "border_slate": "#38BDF8",
+        "primary": "#F8FAFC",
+        "primary_glow": "rgba(248, 250, 252, 0.35)",
+        "secondary": "#38BDF8",
+        "secondary_glow": "rgba(56, 189, 248, 0.35)",
+        "success": "#34D399",
+        "success_glow": "rgba(52, 211, 153, 0.35)",
+        "warning": "#FBBF24",
+        "warning_glow": "rgba(251, 191, 36, 0.35)",
+        "accent": "#38BDF8",
+        "tertiary": "#7DD3FC",
+        "text_main": "#F8FAFC",
+        "text_dim": "#94A3B8",
+        "shadow_dark": "#060D17",
+        "shadow_mid": "#102030",
+    },
+    "rough-doodle": {
+        "name": "Rough Hand-Drawn Doodle & Paper",
+        "bg_glass": "#FDFDFD",
+        "bg_panel": "#F4F4F5",
+        "bg_chip": "rgba(79, 70, 229, 0.10)",
+        "border_slate": "#1F2937",
+        "primary": "#4F46E5",
+        "primary_glow": "rgba(79, 70, 229, 0.25)",
+        "secondary": "#059669",
+        "secondary_glow": "rgba(5, 150, 105, 0.25)",
+        "success": "#059669",
+        "success_glow": "rgba(5, 150, 105, 0.25)",
+        "warning": "#D97706",
+        "warning_glow": "rgba(217, 119, 6, 0.25)",
+        "accent": "#059669",
+        "tertiary": "#D97706",
+        "text_main": "#111827",
+        "text_dim": "#4B5563",
+        "shadow_dark": "#E5E7EB",
+        "shadow_mid": "#D1D5DB",
+    }
+}
 
-from generator.palettes import *
+# Aliases
+THEMES["tactical_amber"] = THEMES["tactical"]
+THEMES["tactical-amber"] = THEMES["tactical"]
+THEMES["amber_crt"] = THEMES["amber"]
+THEMES["amber-crt"] = THEMES["amber"]
+THEMES["tokyo_night"] = THEMES["tokyo"]
+THEMES["tokyo-night"] = THEMES["tokyo"]
+THEMES["clean_mono"] = THEMES["clean-mono"]
+THEMES["corporate_blue"] = THEMES["corporate-blue"]
+THEMES["academic_paper"] = THEMES["academic-paper"]
+THEMES["academic"] = THEMES["academic-paper"]
+THEMES["paper"] = THEMES["academic-paper"]
+THEMES["modern_slate"] = THEMES["modern-slate"]
+THEMES["slate_dark"] = THEMES["slate-dark"]
+THEMES["nordic_frost"] = THEMES["nordic-frost"]
+THEMES["linear_violet"] = THEMES["linear-violet"]
+THEMES["emerald_clean"] = THEMES["emerald-clean"]
+THEMES["excali"] = THEMES["excali-dark"]
+THEMES["excalidraw"] = THEMES["excali-dark"]
+THEMES["excali_dark"] = THEMES["excali-dark"]
+THEMES["notebook"] = THEMES["notebook-graph"]
+THEMES["notebook_graph"] = THEMES["notebook-graph"]
+THEMES["blueprint"] = THEMES["blueprint-sketch"]
+THEMES["blueprint_sketch"] = THEMES["blueprint-sketch"]
+THEMES["doodle"] = THEMES["rough-doodle"]
+THEMES["sketch"] = THEMES["rough-doodle"]
+
+# Re-export modern Theme domain utilities
+from generator.themes import ThemeRegistry, theme_registry, resolve_theme, load_preset
+
+def get_theme(theme_name="cyberpunk"):
+    return THEMES.get(theme_name, THEMES["cyberpunk"])
+

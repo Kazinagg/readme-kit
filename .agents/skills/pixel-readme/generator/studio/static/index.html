@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>READMEKIT // REPO & PROFILE STUDIO v6.5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="/static/css/studio.css">
+</head>
+<body>
+  <!-- TOP NAV BAR -->
+  <header class="hud-nav">
+    <div class="brand">
+      <span class="glyph"></span>
+      <span>READMEKIT</span>
+      <span class="brand-badge">STUDIO v6.5</span>
+    </div>
+
+    <!-- CENTER NAV ACTIONS -->
+    <div class="site-nav-group">
+      <button class="nav-btn btn-cyan" id="btn-toggle-catalog" onclick="toggleCatalogSidebar()" title="Toggle Component Catalog"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M1.5 2.5A.5.5 0 0 1 2 2h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-2zM2 1a1.5 1.5 0 0 0-1.5 1.5v2A1.5 1.5 0 0 0 2 6h12a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 14 1H2zm-.5 7.5A.5.5 0 0 1 2 8h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-2zM2 7a1.5 1.5 0 0 0-1.5 1.5v2A1.5 1.5 0 0 0 2 12h12a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 14 7H2zm-1.5 6.5a.5.5 0 0 1 .5-.5h12a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-1z"/></svg>Catalog</button>
+      <button class="nav-btn btn-purple" id="btn-theme-studio" onclick="openThemeStudio()" title="Theme Creator & Harmonizer">Theme Studio</button>
+      <button class="nav-btn btn-green" id="btn-git-push" onclick="pushReadmeToGit()" title="Safely stage only README and assets and push to git"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M1 2.75C1 1.784 1.784 1 2.75 1h10.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 13.25 15H2.75A1.75 1.75 0 0 1 1 13.25Zm7.75 2.5a.75.75 0 0 0-1.5 0v3.44l-1.22-1.22a.75.75 0 0 0-1.06 1.06l2.5 2.5a.75.75 0 0 0 1.06 0l2.5-2.5a.75.75 0 1 0-1.06-1.06L8.75 8.69Z"/></svg>Push to Git</button>
+      <button class="nav-btn btn-amber" id="btn-debug" onclick="toggleDebugMode()" title="Toggle Alignment Overlay">Grid</button>
+      <button class="nav-btn active-btn" id="btn-toggle-inspector" onclick="toggleInspector()" title="Toggle Block Inspector">Inspector</button>
+    </div>
+
+    <!-- STUDIO THEME CONTROLLER -->
+    <div class="site-control-pill" title="Studio UI Theme (Auto / Dark / Light)">
+      <span class="control-label">STUDIO:</span>
+      <div class="segmented-control" id="studio-theme-control">
+        <button class="seg-btn" id="btn-studio-theme-auto" onclick="setStudioTheme('auto')">Auto</button>
+        <button class="seg-btn active" id="btn-studio-theme-dark" onclick="setStudioTheme('dark')">Dark</button>
+        <button class="seg-btn" id="btn-studio-theme-light" onclick="setStudioTheme('light')">Light</button>
+      </div>
+    </div>
+
+    <!-- RIGHT STATUS & SAVE -->
+    <div class="nav-status">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span id="sse-status">SYNC: ONLINE</span>
+      </div>
+      <span id="draft-dirty-badge" class="char-badge badge-warning" style="display:none;font-weight:700;">Unsaved Changes</span>
+      <button class="nav-btn btn-save" id="btn-save-file" onclick="saveTemplateToFile()" title="Write changes to template and recompile (Ctrl+S)"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>Save to File</button>
+      <button class="nav-btn btn-danger" id="btn-revert-file" style="display:none;" onclick="revertDraftChanges()" title="Revert all unsaved changes">Revert</button>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT 3-COLUMN LAYOUT -->
+  <div class="studio-container" id="main-studio-container">
+    <!-- LEFT: COMPONENT CATALOG SIDEBAR (16 BLOCKS WITH SVG PREVIEWS & DRAG & DROP) -->
+    <aside class="catalog-sidebar" id="catalog-sidebar">
+      <div class="catalog-header">
+        <div class="catalog-title">
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="var(--studio-teal)"><path d="M1.5 2.5A.5.5 0 0 1 2 2h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-2zM2 1a1.5 1.5 0 0 0-1.5 1.5v2A1.5 1.5 0 0 0 2 6h12a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 14 1H2zm-.5 7.5A.5.5 0 0 1 2 8h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-2zM2 7a1.5 1.5 0 0 0-1.5 1.5v2A1.5 1.5 0 0 0 2 12h12a1.5 1.5 0 0 0 1.5-1.5v-2A1.5 1.5 0 0 0 14 7H2zm-1.5 6.5a.5.5 0 0 1 .5-.5h12a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-1z"/></svg>
+          <span>CATALOG</span>
+          <span class="char-badge badge-optimal" id="catalog-count-badge">16 BLOCKS</span>
+        </div>
+        <button class="nav-btn" onclick="toggleCatalogSidebar()" title="Collapse Catalog" style="padding:2px 6px;">&times;</button>
+      </div>
+
+      <div class="catalog-search-wrap">
+        <input type="text" id="catalog-search-inp" placeholder="Search blocks..." oninput="filterCatalogBlocks()">
+      </div>
+
+      <div class="catalog-filter-tags">
+        <button class="cat-tag-btn active" data-cat="all" onclick="filterCatalogCategory('all')">ALL</button>
+        <button class="cat-tag-btn" data-cat="hero" onclick="filterCatalogCategory('hero')">HERO</button>
+        <button class="cat-tag-btn" data-cat="containers" onclick="filterCatalogCategory('containers')">CONTAINERS</button>
+        <button class="cat-tag-btn" data-cat="navigation" onclick="filterCatalogCategory('navigation')">NAV</button>
+        <button class="cat-tag-btn" data-cat="content" onclick="filterCatalogCategory('content')">CONTENT</button>
+        <button class="cat-tag-btn" data-cat="metrics" onclick="filterCatalogCategory('metrics')">METRICS</button>
+        <button class="cat-tag-btn" data-cat="social" onclick="filterCatalogCategory('social')">PROFILES</button>
+      </div>
+
+      <div class="catalog-scroll-list" id="catalog-blocks-list">
+        <!-- Rendered dynamically in app.js with SVG previews -->
+      </div>
+    </aside>
+
+    <!-- CENTER: GITHUB-LIKE PREVIEW -->
+    <main class="preview-pane" id="preview-scroll-area">
+      <!-- UNIFIED THEME & TEMPLATE CONFIGURATION BAR DIRECTLY ABOVE README -->
+      <div class="preview-config-strip" id="preview-config-strip">
+        <div class="preview-config-row">
+          <div class="preview-config-group">
+            <span class="preview-config-label">TEMPLATE:</span>
+            <select id="sel-template-file" class="nav-select" onchange="onTemplateFileSelect()" title="Select template file in directory">
+              <option value="README.template.md">README.template.md</option>
+            </select>
+          </div>
+
+          <div class="mode-switch-group">
+            <button class="mode-tab active" id="tab-mode-edit" onclick="setStudioMode('edit')" title="Edit Mode: click-to-edit blocks, drag & drop, add block dividers"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25a1.75 1.75 0 0 1 .445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.189 6.25 9.75 4.81 3.292 11.268a.25.25 0 0 0-.063.108l-.547 1.912 1.912-.547a.25.25 0 0 0 .108-.063L11.189 6.25Z"/></svg>EDIT</button>
+            <button class="mode-tab" id="tab-mode-view" onclick="setStudioMode('view')" title="View Mode: authentic GitHub render with inline chips"><svg viewBox="0 0 16 16" width="12" height="12"><path d="M8 2c1.981 0 3.67.992 4.933 2.078 1.27 1.091 2.187 2.345 2.637 3.023a1.62 1.62 0 0 1 0 1.798c-.45.678-1.367 1.932-2.637 3.023C11.67 13.008 9.981 14 8 14c-1.981 0-3.67-.992-4.933-2.078C1.797 10.83.88 9.577.43 8.899a1.62 1.62 0 0 1 0-1.798c.45-.678 1.367-1.932 2.637-3.023C4.33 2.992 6.019 2 8 2ZM1.679 8c.373.534 1.144 1.554 2.21 2.47C4.945 11.379 6.37 12.25 8 12.25c1.63 0 3.055-.871 4.111-1.78 1.066-.916 1.837-1.936 2.21-2.47-.373-.534-1.144-1.554-2.21-2.47C10.945 4.621 9.52 3.75 8 3.75c-1.63 0-3.055.871-4.111 1.78C2.823 6.446 2.052 7.466 1.679 8ZM8 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6Zm0 1.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></svg>VIEW</button>
+          </div>
+
+          <div class="preview-config-group">
+            <span class="preview-config-label">GITHUB BG:</span>
+            <div class="segmented-control" id="preview-theme-control">
+              <button class="seg-btn" id="tab-preview-sync" onclick="switchPreviewTheme('sync')" style="display:none;">SYNC</button>
+              <button class="seg-btn active" id="tab-dark" onclick="switchPreviewTheme('dark')">Dark</button>
+              <button class="seg-btn" id="tab-light" onclick="switchPreviewTheme('light')">Light</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-config-row">
+          <div class="preview-config-group">
+            <span class="preview-config-label">STYLE:</span>
+            <div class="segmented-control style-switch-group">
+              <button class="seg-btn active" id="btn-top-style-pixel" onclick="selectTopNavStyle('pixel')">Pixel</button>
+              <button class="seg-btn" id="btn-top-style-modern" onclick="selectTopNavStyle('modern')">Modern</button>
+              <button class="seg-btn" id="btn-top-style-sketch" onclick="selectTopNavStyle('sketch')">Sketch</button>
+            </div>
+          </div>
+
+          <div class="preview-config-group">
+            <span class="preview-config-label">THEME:</span>
+            <select id="top-nav-theme-select" class="nav-select" onchange="onTopNavThemeChange()"></select>
+          </div>
+
+          <div class="preview-config-group">
+            <span class="preview-config-label">COLOR:</span>
+            <select id="top-nav-preset-select" class="nav-select" onchange="onTopNavPresetChange()"></select>
+          </div>
+
+          <div class="preview-config-group">
+            <span class="preview-config-label">MODE:</span>
+            <select id="sel-global-mode" class="nav-select" onchange="onGlobalModeChange()">
+              <option value="auto">Auto</option>
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+              <option value="transparent">Transparent</option>
+            </select>
+          </div>
+
+          <button class="nav-btn btn-cyan" id="btn-apply-global-theme" onclick="applyGlobalThemeToAllBlocks(false)" title="Apply theme while preserving custom accents">SOFT APPLY</button>
+          <button class="nav-btn" onclick="applyGlobalThemeToAllBlocks(true)" title="Force apply theme to all blocks">FORCE ALL</button>
+        </div>
+
+        <div class="preview-config-row" style="padding-top:4px;border-top:1px solid rgba(255,255,255,0.05);">
+          <div class="preview-config-group">
+            <span class="preview-config-label">PRIMARY:</span>
+            <input type="color" id="picker-global-primary" value="#00e5b0" oninput="syncGlobalColor('primary', 'picker')" style="width:24px;height:24px;border:none;cursor:pointer;">
+            <input type="text" id="inp-global-primary" value="#00e5b0" oninput="syncGlobalColor('primary', 'text')" style="width:72px;font-family:var(--studio-font-mono);font-size:11px;" class="nav-select">
+          </div>
+          <div class="preview-config-group">
+            <span class="preview-config-label">ACCENT:</span>
+            <input type="color" id="picker-global-accent" value="#a855f7" oninput="syncGlobalColor('accent', 'picker')" style="width:24px;height:24px;border:none;cursor:pointer;">
+            <input type="text" id="inp-global-accent" value="#a855f7" oninput="syncGlobalColor('accent', 'text')" style="width:72px;font-family:var(--studio-font-mono);font-size:11px;" class="nav-select">
+          </div>
+          <div class="preview-config-group">
+            <span class="preview-config-label">TERTIARY:</span>
+            <input type="color" id="picker-global-tertiary" value="#ff0055" oninput="syncGlobalColor('tertiary', 'picker')" style="width:24px;height:24px;border:none;cursor:pointer;">
+            <input type="text" id="inp-global-tertiary" value="#ff0055" oninput="syncGlobalColor('tertiary', 'text')" style="width:72px;font-family:var(--studio-font-mono);font-size:11px;" class="nav-select">
+          </div>
+          <div style="display:none;">
+            <!-- Hidden backward-compatibility elements for legacy scripts -->
+            <select id="sel-global-style"></select>
+            <select id="sel-global-theme"></select>
+            <select id="sel-global-preset"><option value="custom">custom</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="gh-readme-wrapper">
+        <div class="gh-card-header">
+          <div class="gh-card-title">
+            <svg viewBox="0 0 16 16" width="16" height="16">
+              <path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.494a2.25 2.25 0 0 0-2.251 2.25Z"></path>
+            </svg>
+            <span id="template-filename">README.md</span>
+            <span class="gh-badge">Preview</span>
+          </div>
+          <div class="gh-card-meta">
+            <span id="gh-stats-lines">-- lines</span> | <span id="gh-stats-bytes">-- KB</span>
+          </div>
+        </div>
+        <article class="markdown-body entry-content" id="readme-preview-content" data-color-mode="dark">
+          <!-- Compiled README HTML Injected Here -->
+        </article>
+      </div>
+    </main>
+
+    <!-- RIGHT: HUD INSPECTOR DRAWER -->
+    <aside class="inspector-pane" id="inspector-panel">
+      <div class="pane-title">
+        <span id="lbl-inspector-heading">BLOCK INSPECTOR</span>
+        <button class="nav-btn" style="padding:4px 6px;" onclick="toggleInspector()" title="Close Inspector"><svg viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/></svg></button>
+      </div>
+
+      <!-- Quick Template Blocks Jump Selector -->
+      <div class="control-group" id="group-existing-blocks">
+        <label>
+          <span>Jump to Block</span>
+          <span id="block-counter-badge" class="char-badge badge-optimal">0 blocks</span>
+        </label>
+        <select id="sel-existing-block" onchange="onSelectExistingBlock()" style="border-color:var(--studio-teal);font-weight:600;">
+          <option value="">(Loading blocks...)</option>
+        </select>
+      </div>
+
+      <div id="inspector-empty-state" class="inspector-empty-state" style="display:none;">
+        <svg viewBox="0 0 24 24" width="36" height="36"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <p>Select a block in the preview or catalog to inspect and edit its properties.</p>
+      </div>
+
+      <div id="block-editor-container" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+
+      <!-- SECTION 1: CORE BLOCK TYPE & THEME -->
+      <div class="inspector-section">
+        <div class="section-header">
+          <span>1. CORE IDENTIFIER & THEME</span>
+          <span id="badge-lock-type" class="char-badge" style="display:none;background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid #f59e0b;">LOCKED (EDIT)</span>
+        </div>
+
+        <div class="control-group">
+          <label>Block Type</label>
+          <select id="sel-type" onchange="onTypeChange(true)">
+            <option value="header">Header Banner</option>
+            <option value="timeline">PCB Timeline / Roadmap</option>
+            <option value="window">Window Frame Monolith</option>
+            <option value="terminal">Terminal (Details/Summary)</option>
+            <option value="quote">Quote Box Alert</option>
+            <option value="metrics">Metrics KPI Card</option>
+            <option value="progress">Progress HUD Bar</option>
+            <option value="techstack">Tech Stack Matrix</option>
+            <option value="callout">Callout Alert</option>
+            <option value="frame">Window Cap (Top/Bottom)</option>
+            <option value="chip">Holographic Chip</option>
+            <option value="divider">Chapter Divider</option>
+            <option value="splitter">Sub-Module Splitter</option>
+            <option value="footer">Closing Footer Plate</option>
+            <option value="social">OpenGraph Social Card</option>
+            <option value="starchart">Star Growth Trend Chart</option>
+            <option value="profile">Profile Dossier Card</option>
+          </select>
+        </div>
+
+        <!-- Inherit Global Theme Checkbox -->
+        <div class="control-group">
+          <label class="checkbox-row" style="margin:2px 0 6px 0;">
+            <input type="checkbox" id="chk-inherit-theme" checked onchange="onInheritThemeToggle()">
+            <span style="font-weight:600;color:var(--studio-cyan);">[x] Inherit Global Theme (Default)</span>
+          </label>
+        </div>
+
+        <div id="block-theme-override-controls" style="display:none;">
+          <div class="control-row">
+            <div class="control-group">
+              <label>Style</label>
+              <select id="sel-style" onchange="onBlockStyleChange()">
+                <option value="pixel">Pixel / Retro-Tech</option>
+                <option value="modern">Modern Clean Vector</option>
+                <option value="sketch">Hand-Drawn Sketch</option>
+              </select>
+            </div>
+            <div class="control-group">
+              <label>Theme</label>
+              <select id="sel-theme" onchange="onBlockThemeChange()">
+                <!-- Populated dynamically based on sel-style -->
+              </select>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-group">
+              <label>Color Preset</label>
+              <select id="sel-preset" onchange="onBlockPresetChange()">
+                <!-- Populated dynamically based on sel-theme -->
+              </select>
+            </div>
+            <div class="control-group">
+              <label>Theme Mode</label>
+              <select id="sel-mode" onchange="debounceRender()">
+                <option value="auto">Auto (Dark + Light)</option>
+                <option value="dark">Dark Only</option>
+                <option value="light">Light Only</option>
+                <option value="transparent">Transparent</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-group">
+              <label>Color Mode</label>
+              <div style="display:flex;gap:12px;margin-top:7px;font-size:11px;">
+                <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+                  <input type="radio" name="block-color-mode" id="rad-preset" value="preset" checked onchange="onBlockColorModeToggle()">
+                  <span>Preset</span>
+                </label>
+                <label style="cursor:pointer;display:flex;align-items:center;gap:4px;">
+                  <input type="radio" name="block-color-mode" id="rad-custom" value="custom" onchange="onBlockColorModeToggle()">
+                  <span>Custom Hex</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-row" id="row-custom-colors" style="opacity:0.4;pointer-events:none;">
+            <div class="control-group">
+              <label>Custom Primary</label>
+              <div class="color-picker-row">
+                <input type="color" id="picker-primary" value="#00c8d7" oninput="syncBlockColor('primary', 'picker')">
+                <input type="text" id="inp-primary" value="#00c8d7" oninput="syncBlockColor('primary', 'text')" style="flex:1;">
+              </div>
+            </div>
+            <div class="control-group">
+              <label>Custom Accent</label>
+              <div class="color-picker-row">
+                <input type="color" id="picker-accent" value="#a855f7" oninput="syncBlockColor('accent', 'picker')">
+                <input type="text" id="inp-accent" value="#a855f7" oninput="syncBlockColor('accent', 'text')" style="flex:1;">
+              </div>
+            </div>
+            <div class="control-group">
+              <label>Custom Tertiary</label>
+              <div class="color-picker-row">
+                <input type="color" id="picker-tertiary" value="#ff0055" oninput="syncBlockColor('tertiary', 'picker')">
+                <input type="text" id="inp-tertiary" value="#ff0055" oninput="syncBlockColor('tertiary', 'text')" style="flex:1;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC CONTEXTUAL FIELD SECTIONS -->
+
+      <!-- 1. HEADER ATTRIBUTES -->
+      <div class="inspector-section" id="section-header">
+        <div class="section-header">
+          <span>2. BANNER PARAMETERS & LEVEL-3 SPECS</span>
+        </div>
+        <div class="control-group">
+          <label>Title <span id="badge-title-budget" class="char-badge badge-optimal">0 chars</span></label>
+          <input type="text" id="inp-title" value="PIXEL README KIT" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Subtitle <span id="badge-sub-budget" class="char-badge badge-optimal">0 chars</span></label>
+          <input type="text" id="inp-subtitle" value="RETRO-FUTURISTIC HUD & SCI-FI INFOGRAPHICS" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Tag / Status Badge</label>
+          <input type="text" id="inp-tag" value="SYSTEM_ONLINE" oninput="debounceRender()">
+        </div>
+        <div id="group-header-specs" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="control-group">
+            <label>Spec 1 (Telemetry Line 1) <span id="badge-spec1-budget" class="char-badge badge-optimal">0 chars</span></label>
+            <input type="text" id="inp-spec1" placeholder="e.g. CORE // KERNEL 5.15" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Spec 2 (Telemetry Line 2) <span id="badge-spec2-budget" class="char-badge badge-optimal">0 chars</span></label>
+            <input type="text" id="inp-spec2" placeholder="e.g. NET // 10Gbps SECURE" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Spec 3 (Telemetry Line 3) <span id="badge-spec3-budget" class="char-badge badge-optimal">0 chars</span></label>
+            <input type="text" id="inp-spec3" placeholder="e.g. STATUS // NOMINAL" oninput="debounceRender()">
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Tag URL (Right Link)</label>
+            <input type="text" id="inp-tag-url" placeholder="https://..." oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Close URL ([X] Link)</label>
+            <input type="text" id="inp-close-url" placeholder="#top" oninput="debounceRender()">
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="checkbox-row" style="margin-top:4px;">
+            <input type="checkbox" id="chk-compact" onchange="updateContextualVisibility(); debounceRender();">
+            <span>Compact Banner Mode (Mobile Viewport ~84px)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 2. TIMELINE ATTRIBUTES -->
+      <div class="inspector-section" id="section-timeline" style="display:none;">
+        <div class="section-header">
+          <span>2. PCB TIMELINE / ROADMAP STAGES</span>
+        </div>
+        <div class="control-group">
+          <label>Milestones (One per line: milestone title="..." date="..." status="..." desc="...")</label>
+          <textarea id="inp-timeline-milestones" rows="7" style="font-size:11px;" placeholder='milestone title="STAGE 1" date="2026-Q1" status="COMPLETED" desc="Research & architecture"&#10;milestone title="STAGE 2" date="2026-Q2" status="IN_PROGRESS" desc="Core runtime & tests"&#10;milestone title="STAGE 3" date="2026-Q3" status="PLANNED" desc="HUD Studio & launch"' oninput="debounceRender()"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="nav-btn" type="button" style="font-size:10px;padding:3px 8px;" onclick="addSampleMilestone()">+ Add Milestone Template</button>
+        </div>
+      </div>
+
+      <!-- 3. WINDOW MONOLITH ATTRIBUTES -->
+      <div class="inspector-section" id="section-window" style="display:none;">
+        <div class="section-header">
+          <span>2. WINDOW FRAME CONTAINER</span>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Window Title</label>
+            <input type="text" id="inp-window-title" value="SYSTEM.WINDOW" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Window Tag</label>
+            <input type="text" id="inp-window-tag" value="[SYS_LOG]" oninput="debounceRender()">
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Tag URL</label>
+            <input type="text" id="inp-window-tag-url" placeholder="https://..." oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Close URL</label>
+            <input type="text" id="inp-window-close-url" placeholder="#top" oninput="debounceRender()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. TERMINAL (DETAILS/SUMMARY) ATTRIBUTES -->
+      <div class="inspector-section" id="section-terminal" style="display:none;">
+        <div class="section-header">
+          <span>2. TERMINAL (DETAILS/SUMMARY)</span>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Terminal Title</label>
+            <input type="text" id="inp-terminal-title" value="HUD.TERMINAL" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Initial State</label>
+            <select id="sel-terminal-state" onchange="debounceRender()">
+              <option value="open">Expanded (open)</option>
+              <option value="closed">Collapsed (closed)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. QUOTE CALLOUT ATTRIBUTES -->
+      <div class="inspector-section" id="section-quote" style="display:none;">
+        <div class="section-header">
+          <span>2. QUOTE BLOCKQUOTE HEADER</span>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Quote Title</label>
+            <input type="text" id="inp-quote-title" value="SPECIFICATION NOTICE" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Badge</label>
+            <select id="sel-quote-badge" onchange="onQuoteBadgeChange()">
+              <option value="NOTE">NOTE (Blue #2f81f7)</option>
+              <option value="TIP">TIP (Green #238636)</option>
+              <option value="IMPORTANT">IMPORTANT (Purple #8957e5)</option>
+              <option value="WARNING">WARNING (Amber #d29922)</option>
+              <option value="CAUTION">CAUTION (Red #f85149)</option>
+              <option value="CRITICAL">CRITICAL (Red #f85149)</option>
+              <option value="SUCCESS">SUCCESS (Green #238636)</option>
+              <option value="INFO">INFO (Purple #8957e5)</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-row" id="row-quote-badge">
+          <div class="control-group">
+            <label class="checkbox-row" style="margin-top:6px;">
+              <input type="checkbox" id="chk-quote-custom-badge" onchange="onQuoteCustomBadgeToggle()">
+              <span>Custom Badge Color</span>
+            </label>
+          </div>
+          <div class="control-group" id="quote-badge-color-group" style="display:none;">
+            <label>Badge Hex</label>
+            <div class="color-picker-row">
+              <input type="color" id="picker-quote-badge-color" value="#2f81f7" oninput="syncQuoteBadgeColor('picker')">
+              <input type="text" id="inp-quote-badge-color" value="#2f81f7" oninput="syncQuoteBadgeColor('text')" style="flex:1;">
+            </div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Subtitle</label>
+          <input type="text" id="inp-quote-sub" value="Content flows into live blockquote text" oninput="debounceRender()">
+        </div>
+      </div>
+
+      <!-- 6. CHIP ATTRIBUTES -->
+      <div class="inspector-section" id="section-chip" style="display:none;">
+        <div class="section-header">
+          <span>2. CHIP PARAMETERS & GITHUB STATS</span>
+        </div>
+        <div class="control-group">
+          <label>Chip Text</label>
+          <input type="text" id="inp-chip-text" value="CHIP" oninput="debounceRender()">
+        </div>
+        <div class="control-row" id="row-chip-form">
+          <div class="control-group">
+            <label>Chip Form</label>
+            <select id="sel-chip-type" onchange="updateContextualVisibility(); debounceRender();">
+              <option value="closed">Closed Hologram</option>
+              <option value="decay">Decay Wireframe</option>
+              <option value="pulse">Pulse Reactor</option>
+            </select>
+          </div>
+          <div class="control-group" id="group-decay-dir">
+            <label>Decay Direction</label>
+            <select id="sel-decay-dir" onchange="debounceRender()">
+              <option value="right">Right</option>
+              <option value="left">Left</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-row" id="row-chip-gh">
+          <div class="control-group">
+            <label>GitHub Auto Stat</label>
+            <select id="sel-chip-gh" onchange="updateContextualVisibility(); debounceRender();">
+              <option value="">(None - Custom Text)</option>
+              <option value="stars">Stars</option>
+              <option value="forks">Forks</option>
+              <option value="issues">Open Issues</option>
+              <option value="license">License</option>
+              <option value="watchers">Watchers</option>
+              <option value="version">Latest Release</option>
+            </select>
+          </div>
+          <div class="control-group" id="group-chip-repo">
+            <label>Repository (owner/repo)</label>
+            <input type="text" id="inp-chip-repo" placeholder="Kazinagg/pixel-readme-kit" oninput="debounceRender()">
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Custom Width (px)</label>
+            <input type="number" id="inp-chip-width" placeholder="Auto" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Link URL</label>
+            <input type="text" id="inp-chip-url" placeholder="https://..." oninput="debounceRender()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. METRICS ATTRIBUTES -->
+      <div class="inspector-section" id="section-metrics" style="display:none;">
+        <div class="section-header">
+          <span>2. METRICS & KPI CARDS</span>
+        </div>
+        <div class="control-group">
+          <label>Quick Cards (LABEL: VAL (+DELTA) [STATUS] | ...)</label>
+          <textarea id="inp-metrics-items" rows="3" placeholder="FPS: 120+ (+24%) [OPTIMAL] | LATENCY: 2.1ms | MEM: 64MB" oninput="debounceRender()"></textarea>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Card Label</label>
+            <input type="text" id="inp-metrics-label" placeholder="BENCHMARK" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Card Value</label>
+            <input type="text" id="inp-metrics-val" placeholder="1,200+" oninput="debounceRender()">
+          </div>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Delta / Benchmark</label>
+            <input type="text" id="inp-metrics-delta" placeholder="+24% vs base" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Status Badge</label>
+            <input type="text" id="inp-metrics-status" placeholder="OPTIMAL" oninput="debounceRender()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. PROGRESS ATTRIBUTES -->
+      <div class="inspector-section" id="section-progress" style="display:none;">
+        <div class="section-header">
+          <span>2. PROGRESS HUD BAR</span>
+        </div>
+        <div class="control-group">
+          <label>Percentage: <span id="lbl-progress-num" style="color:var(--studio-cyan);font-weight:700;">75%</span></label>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="range" id="rng-progress-val" min="0" max="100" value="75" style="flex:1;" oninput="syncProgressInput('range')">
+            <input type="number" id="inp-progress-val" min="0" max="100" value="75" style="width:65px;" oninput="syncProgressInput('num')">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Label</label>
+          <input type="text" id="inp-progress-label" value="CORE SYSTEM PROGRESS" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Subtext Diagnostic</label>
+          <input type="text" id="inp-progress-sub" value="STAGE 4/5 // COMPILATION COMPLETE" oninput="debounceRender()">
+        </div>
+      </div>
+
+      <!-- 9. TECHSTACK ATTRIBUTES -->
+      <div class="inspector-section" id="section-techstack" style="display:none;">
+        <div class="section-header">
+          <span>2. TECH STACK MATRIX</span>
+        </div>
+        <div class="control-group">
+          <label>Tech Icons (comma-separated)</label>
+          <input type="text" id="inp-techstack-items" value="python,cpp,docker,git,fastapi" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Grid Columns Count</label>
+          <input type="number" id="inp-techstack-cols" value="5" min="1" max="12" oninput="debounceRender()">
+        </div>
+      </div>
+
+      <!-- 10. CALLOUT ATTRIBUTES -->
+      <div class="inspector-section" id="section-callout" style="display:none;">
+        <div class="section-header">
+          <span>2. CALLOUT & QUOTE ALERT</span>
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Badge Type</label>
+            <select id="sel-callout-type" onchange="onCalloutTypeChange()">
+              <option value="note">Note (Blue #2f81f7)</option>
+              <option value="tip">Tip (Green #238636)</option>
+              <option value="important">Important (Purple #8957e5)</option>
+              <option value="warning">Warning (Amber #d29922)</option>
+              <option value="caution">Caution (Red #f85149)</option>
+              <option value="critical">Critical (Red #f85149)</option>
+              <option value="success">Success (Green #238636)</option>
+              <option value="info">Info (Purple #8957e5)</option>
+            </select>
+          </div>
+          <div class="control-group" style="justify-content:center;">
+            <label class="checkbox-row" style="margin-top:14px;">
+              <input type="checkbox" id="chk-callout-quote" onchange="debounceRender()">
+              <span>Quote Box Styling</span>
+            </label>
+          </div>
+        </div>
+        <div class="control-row" id="row-callout-badge">
+          <div class="control-group">
+            <label class="checkbox-row" style="margin-top:6px;">
+              <input type="checkbox" id="chk-callout-custom-badge" onchange="onCalloutCustomBadgeToggle()">
+              <span>Custom Badge Color</span>
+            </label>
+          </div>
+          <div class="control-group" id="callout-badge-color-group" style="display:none;">
+            <label>Badge Hex</label>
+            <div class="color-picker-row">
+              <input type="color" id="picker-callout-badge-color" value="#2f81f7" oninput="syncCalloutBadgeColor('picker')">
+              <input type="text" id="inp-callout-badge-color" value="#2f81f7" oninput="syncCalloutBadgeColor('text')" style="flex:1;">
+            </div>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Alert Title</label>
+          <input type="text" id="inp-callout-title" value="SYSTEM SPECIFICATION" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Alert Message / Subtitle</label>
+          <input type="text" id="inp-callout-sub" value="Autonomous neural interface loaded successfully." oninput="debounceRender()">
+        </div>
+      </div>
+
+      <!-- 11. FRAME ATTRIBUTES -->
+      <div class="inspector-section" id="section-frame" style="display:none;">
+        <div class="section-header">
+          <span>2. FRAME WINDOW CAP</span>
+        </div>
+        <div class="control-row" id="row-frame-cap">
+          <div class="control-group">
+            <label>Cap Type</label>
+            <select id="sel-frame-type" onchange="updateContextualVisibility(); debounceRender();">
+              <option value="top">Top Cap</option>
+              <option value="bottom">Bottom Cap</option>
+            </select>
+          </div>
+          <div class="control-group" id="group-frame-tag">
+            <label>Frame Tag</label>
+            <input type="text" id="inp-frame-tag" value="[OPEN_HUD]" oninput="debounceRender()">
+          </div>
+        </div>
+        <div class="control-group" id="group-frame-title">
+          <label>Frame Title</label>
+          <input type="text" id="inp-frame-title" value="SYSTEM.CORE" oninput="debounceRender()">
+        </div>
+        <div class="control-row" id="row-frame-links">
+          <div class="control-group" id="group-frame-tag-url">
+            <label>Tag URL</label>
+            <input type="text" id="inp-frame-tag-url" placeholder="https://..." oninput="debounceRender()">
+          </div>
+          <div class="control-group" id="group-frame-close-url">
+            <label>Close URL</label>
+            <input type="text" id="inp-frame-close-url" placeholder="#top" oninput="debounceRender()">
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. DIVIDER ATTRIBUTES -->
+      <div class="inspector-section" id="section-divider" style="display:none;">
+        <div class="section-header">
+          <span>2. CHAPTER DIVIDER</span>
+        </div>
+        <p style="font-size:11.5px;color:var(--studio-text-dim);">
+          Vector chapter divider with pixel grid ornaments and style accents. Inherits style, preset, mode, and colors from above.
+        </p>
+      </div>
+
+      <!-- 13. SPLITTER ATTRIBUTES -->
+      <div class="inspector-section" id="section-splitter" style="display:none;">
+        <div class="section-header">
+          <span>2. SUB-MODULE SPLITTER</span>
+        </div>
+        <div class="control-group">
+          <label>Splitter Label</label>
+          <input type="text" id="inp-splitter-label" value="[SUB_MODULE: DATABASE]" oninput="debounceRender()">
+        </div>
+      </div>
+
+      <!-- 14. FOOTER ATTRIBUTES -->
+      <div class="inspector-section" id="section-footer" style="display:none;">
+        <div class="section-header">
+          <span>2. CLOSING FOOTER PLATE</span>
+        </div>
+        <div class="control-group">
+          <label>Status Message</label>
+          <input type="text" id="inp-footer-status" value="SESSION_ACTIVE // STANDBY" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Nav Link Text</label>
+          <input type="text" id="inp-footer-nav" value="^ RETURN TO TOP" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Diagnostic Subtext</label>
+          <input type="text" id="inp-footer-sub" value="END OF TELEMETRY STREAM" oninput="debounceRender()">
+        </div>
+      </div>
+
+      <!-- 15. SOCIAL ATTRIBUTES -->
+      <div class="inspector-section" id="section-social" style="display:none;">
+        <div class="section-header">
+          <span>2. OPENGRAPH SOCIAL CARD</span>
+        </div>
+        <div class="control-group">
+          <label>Main Title</label>
+          <input type="text" id="inp-social-title" value="PIXEL README KIT" oninput="debounceRender()">
+        </div>
+        <div class="control-group">
+          <label>Description Subtitle</label>
+          <input type="text" id="inp-social-sub" value="Retro-Futuristic HUD & Sci-Fi Infographics" oninput="debounceRender()">
+        </div>
+        <div class="control-row">
+          <div class="control-group">
+            <label>Repository</label>
+            <input type="text" id="inp-social-repo" value="Kazinagg/pixel-readme-kit" oninput="debounceRender()">
+          </div>
+          <div class="control-group">
+            <label>Tags (comma-separated)</label>
+            <input type="text" id="inp-social-tags" value="PYTHON,SVG,CYBERPUNK" oninput="debounceRender()">
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTAINER BODY CONTENT (For window/terminal/quote) -->
+      <div class="inspector-section" id="section-body" style="display:none;">
+        <div class="section-header">
+          <span>3. INNER CONTAINER BODY (MARKDOWN)</span>
+        </div>
+        <div class="control-group">
+          <textarea id="inp-body" rows="6" placeholder="Inner markdown content..." oninput="debounceRender()"></textarea>
+        </div>
+      </div>
+
+      <!-- LIVE PREVIEW & TWO-WAY RAW DIRECTIVE EDITOR -->
+      <div class="live-card">
+        <div class="section-header" style="border-bottom:none;">
+          <span>LIVE SVG PREVIEW</span>
+          <span id="render-latency" style="color:var(--studio-amber);font-size:10px;">REALTIME</span>
+        </div>
+        <div class="live-preview-box" id="live-svg-box">
+          <div class="debug-grid-overlay" id="hud-debug-grid"></div>
+          <div id="svg-render-mount" style="width:100%;display:flex;align-items:center;justify-content:center;"></div>
+        </div>
+
+        <div class="section-header" style="border-bottom:none; margin-top:4px;">
+          <span>RAW DIRECTIVE CODE (TWO-WAY EDITABLE)</span>
+        </div>
+        <textarea class="raw-directive-editor" id="txt-raw-directive" oninput="onRawDirectiveManualEdit()"></textarea>
+
+        <div class="action-btn-row tri-btn" id="edit-mode-actions">
+          <button class="nav-btn btn-save" onclick="saveExistingBlockChanges()">Save Changes</button>
+          <button class="nav-btn btn-danger" onclick="deleteExistingBlock()">Delete Block</button>
+          <button class="nav-btn" onclick="copyDirective()">Copy</button>
+        </div>
+
+        <div class="action-btn-row" id="insert-mode-actions" style="display:none;">
+          <button class="nav-btn btn-save" onclick="executeInsertBlock()">Insert Block</button>
+          <button class="nav-btn" onclick="cancelInsertMode()">Cancel</button>
+        </div>
+      </div>
+      </div>
+    </aside>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+  <script src="/static/js/theme_studio.js"></script>
+</body>
+</html>

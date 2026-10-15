@@ -1,0 +1,12 @@
+{
+  "theme": "clean-mono",
+  "name": "Clean Monochrome Minimal",
+  "paradigm": "clean",
+  "primary": "#E2E8F0",
+  "secondary": "#94A3B8",
+  "accent": "#F8FAFC",
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(15, 23, 42, 0.85)",
+  "border_subtle": "rgba(51, 65, 85, 0.85)"
+}

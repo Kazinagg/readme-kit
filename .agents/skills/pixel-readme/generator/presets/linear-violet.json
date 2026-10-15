@@ -1,0 +1,12 @@
+{
+  "theme": "linear-violet",
+  "name": "Linear Deep Violet",
+  "paradigm": "modern",
+  "primary": "#8B5CF6",
+  "secondary": "#C084FC",
+  "accent": "#A855F7",
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "bg_glass": "rgba(8, 9, 13, 0.94)",
+  "border_subtle": "rgba(45, 43, 67, 0.85)"
+}

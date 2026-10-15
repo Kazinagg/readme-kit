@@ -1,0 +1,11 @@
+{
+  "theme": "tokyo",
+  "name": "Tokyo Night Neon",
+  "primary": "#7AA2F7",
+  "secondary": "#BB9AF7",
+  "accent": "#7DCFFF",
+  "success": "#9ECE6A",
+  "warning": "#E0AF68",
+  "bg_glass": "rgba(15, 18, 28, 0.75)",
+  "border_subtle": "rgba(35, 42, 65, 0.85)"
+}

@@ -1,12 +1,33 @@
-import os
-import sys
+"""
+HUD Studio Server Façade for ReadmeKit.
+==============================================
+Provides 100% backwards compatibility for legacy and CLI callers.
+Modular implementation is located in `generator.studio`.
+"""
 
-_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
+from generator.studio import (
+    STUDIO_HTML,
+    StudioRequestHandler,
+    ThreadedStudioServer,
+    start_file_watcher,
+    run_studio_server,
+    extract_template_blocks,
+    apply_global_theme_to_content,
+    render_preview_html,
+    markdown_to_html,
+)
 
-from generator.server import *
+__all__ = [
+    "STUDIO_HTML",
+    "StudioRequestHandler",
+    "ThreadedStudioServer",
+    "start_file_watcher",
+    "run_studio_server",
+    "extract_template_blocks",
+    "apply_global_theme_to_content",
+    "render_preview_html",
+    "markdown_to_html",
+]
 
 if __name__ == "__main__":
-    from generator.server import run_studio_server
     run_studio_server()
